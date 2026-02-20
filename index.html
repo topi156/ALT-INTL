@@ -396,6 +396,113 @@ body::before {
   margin-bottom: 10px;
 }
 
+/* AI Summary */
+.ai-summary-wrap {
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: rgba(26,74,138,0.04);
+  border-left: 3px solid var(--accent2);
+}
+
+.ai-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--accent2);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-text {
+  font-family: 'Crimson Pro', serif;
+  font-size: 14px;
+  color: var(--ink-mid);
+  line-height: 1.65;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.typing-cursor {
+  display: inline-block;
+  width: 2px; height: 14px;
+  background: var(--accent2);
+  animation: blink 0.8s steps(1) infinite;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+@keyframes blink { 50% { opacity:0; } }
+
+.article-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.action-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: transparent;
+  border: 1px solid var(--rule);
+  color: var(--ink-mid);
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex; align-items: center; gap: 6px;
+}
+
+.action-btn:hover { border-color: var(--ink-mid); color: var(--ink); }
+.action-btn.summarized { border-color: var(--accent2); color: var(--accent2); }
+.action-btn:disabled { opacity: 0.35; pointer-events: none; }
+
+.read-more {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-dim);
+  text-decoration: none;
+  transition: color 0.15s;
+  margin-right: auto;
+}
+.read-more:hover { color: var(--accent); }
+
+.paywall-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-dim);
+  border: 1px solid var(--rule);
+  padding: 2px 6px;
+  opacity: 0.6;
+}
+
+/* Relevance */
+.rel-score {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--ink-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rel-dots {
+  display: flex; gap: 2px;
+}
+
+.rel-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--rule);
+}
+.rel-dot.filled { background: var(--gold); }
+
 /* Article right col */
 .article-right {
   width: 80px;
@@ -746,6 +853,24 @@ body::before {
   .masthead { padding: 0 20px; }
 }
 
+.article-why {
+  font-size: 12px;
+  color: var(--ink-dim);
+  margin: 4px 0 8px;
+  line-height: 1.5;
+  padding: 5px 10px;
+  border-left: 2px solid var(--accent);
+  background: rgba(196,56,26,0.03);
+}
+.why-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  font-weight: 700;
+  margin-right: 6px;
+}
 </style>
 </head>
 <body>
@@ -768,8 +893,7 @@ body::before {
     </div>
   </div>
   <nav class="masthead-nav">
-    <button class="nav-item" id="btn-live" data-s="live" onclick="filter('live',this)">Live Briefing</button>
-    <button class="nav-item" id="btn-all" data-s="all" onclick="filter('all',this)">All Sectors</button>
+    <button class="nav-item active" data-s="all" onclick="filter('all',this)">All Sectors</button>
     <button class="nav-item" data-s="PE" onclick="filter('PE',this)">Private Equity</button>
     <button class="nav-item" data-s="Credit" onclick="filter('Credit',this)">Private Credit</button>
     <button class="nav-item" data-s="Infra" onclick="filter('Infra',this)">Infrastructure</button>
@@ -821,10 +945,12 @@ body::before {
 
     <div class="briefing-widget">
       <div class="briefing-head">Morning Briefing — AI Generated</div>
-      <textarea class="briefing-body" id="briefing-output" style="width:100%; min-height:120px; background:transparent; border:none; color:rgba(245,242,235,0.75); font-family:'Crimson Pro',serif; font-size:14px; line-height:1.7; resize:vertical; outline:none;" placeholder="Generates a daily briefing based on the top stories..."></textarea>
+      <div class="briefing-body" id="briefing-body">
+        <span class="briefing-placeholder">AI features require a server-side proxy (API key cannot run in the browser). News feed works normally.</span>
+      </div>
       <div class="briefing-actions">
-        <button class="btn-briefing" id="gen-btn" onclick="generateDailyBrief()">⚡ Generate</button>
-        <button class="btn-email" id="email-brief-btn" onclick="emailBrief()">✉ Email</button>
+        <button class="btn-briefing" id="gen-btn" onclick="generateBriefing()">⚡ Generate</button>
+        <button class="btn-email" id="email-brief-btn" onclick="openEmailModal()" disabled>✉ Email</button>
       </div>
     </div>
 
@@ -879,55 +1005,171 @@ body::before {
 // ─────────────────────────────────────
 // DATA
 // ─────────────────────────────────────
+// ─────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────
+// ─────────────────────────────────────
+// RSS FEEDS — real articles, no backend needed
+// ─────────────────────────────────────
 const RSS_FEEDS = [
-  // ── Paywall ─────────────────
-  { url: "https://www.privateequitywire.co.uk/feed/",                                  source: "PE Wire",        sector: "PE",     paywall: true  },
-  { url: "https://www.infrastructureinvestor.com/feed/",                               source: "Infra Investor", sector: "Infra",  paywall: true  },
-  { url: "https://www.perenews.com/feed/",                                             source: "PERE News",      sector: "RE",     paywall: true  },
-  { url: "https://www.buyoutsinsider.com/feed/",                                       source: "Buyouts Insider",sector: "PE",     paywall: true  },
-  { url: "https://feeds.content.dowjones.io/public/rss/WSJcomUSBusiness",             source: "WSJ Business",   sector: "PE",     paywall: true  },
-  { url: "https://www.ft.com/stream/ab70c42c-4d60-4851-89bb-16e2daeddfc1?format=rss", source: "FT Private Equity", sector: "PE",  paywall: true  },
-  { url: "https://www.fnlondon.com/rss",                                               source: "FN London",      sector: "Hedge",  paywall: true  },
+  // ── PE / VC ─────────────────────────────────────────
+  { url: "https://www.privateequitywire.co.uk/feed/",                source: "PE Wire",         sector: "PE",    paywall: true  },
+  { url: "https://www.buyoutsinsider.com/feed/",                     source: "Buyouts Insider", sector: "PE",    paywall: true  },
+  { url: "https://www.privateequityinternational.com/feed/",         source: "PEI",             sector: "PE",    paywall: true  },
+  { url: "https://altassets.net/feed",                               source: "AltAssets",       sector: "PE",    paywall: false },
+  { url: "https://pitchbook.com/blog/rss.xml",                       source: "PitchBook",       sector: "PE",    paywall: false },
+  { url: "https://www.theguardian.com/business/privateequity/rss",   source: "Guardian PE",     sector: "PE",    paywall: false },
+  { url: "https://businesswire.com/rss/home/rss_homepage.rss",       source: "Business Wire",   sector: "PE",    paywall: false },
+  { url: "https://www.pehub.com/feed/",                              source: "PE Hub",          sector: "PE",    paywall: false },
+  { url: "https://techcrunch.com/category/venture/feed/",            source: "TechCrunch VC",   sector: "PE",    paywall: false },
 
-  // ── Free / Soft Paywall ─────────────────────────────
-  { url: "https://feeds.reuters.com/reuters/businessNews",                             source: "Reuters",        sector: "Macro",  paywall: false },
-  { url: "https://www.cnbc.com/id/10001147/device/rss/rss.html",                      source: "CNBC",           sector: "Macro",  paywall: false },
-  { url: "https://altassets.net/feed",                                                 source: "AltAssets",      sector: "PE",     paywall: false },
-  { url: "https://pitchbook.com/blog/rss.xml",                                         source: "PitchBook",      sector: "PE",     paywall: false },
-  { url: "https://corpgov.law.harvard.edu/feed/",                                      source: "Harvard Law",    sector: "PE",     paywall: false },
-  { url: "https://opalesque.com/rss.xml",                                              source: "Opalesque",      sector: "Hedge",  paywall: false },
+  // ── Infrastructure ──────────────────────────────────
+  { url: "https://www.infrastructureinvestor.com/feed/",             source: "Infra Investor",  sector: "Infra", paywall: true  },
+  { url: "https://renewablesnow.com/news/rss/",                      source: "Renewables Now",  sector: "Infra", paywall: false },
+  { url: "https://www.rechargenews.com/rss",                         source: "Recharge News",   sector: "Infra", paywall: false },
+  { url: "https://www.pv-tech.org/feed/",                            source: "PV Tech",         sector: "Infra", paywall: false },
+
+  // ── Real Estate ─────────────────────────────────────
+  { url: "https://www.perenews.com/feed/",                           source: "PERE News",       sector: "RE",    paywall: true  },
+  { url: "https://therealdeal.com/feed/",                            source: "The Real Deal",   sector: "RE",    paywall: false },
+  { url: "https://www.globest.com/feed/",                            source: "GlobeSt",         sector: "RE",    paywall: false },
+  { url: "https://www.commercialobserver.com/feed/",                 source: "Commercial Observer", sector: "RE", paywall: false },
+  { url: "https://www.mingtiandi.com/feed/",                         source: "Mingtiandi",      sector: "RE",    paywall: false },
+
+  // ── Hedge / Credit ──────────────────────────────────
+  { url: "https://opalesque.com/rss.xml",                            source: "Opalesque",       sector: "Hedge", paywall: false },
+  { url: "https://www.fnlondon.com/rss",                             source: "FN London",       sector: "Credit",paywall: true  },
+
+  // ── Premium / Harder to reach (Proxies / Google News)
+  { url: "https://www.ft.com/stream/ab70c42c-4d60-4851-89bb-16e2daeddfc1?format=rss", source: "FT Private Equity", sector: "PE",    paywall: true  },
+  { url: "https://www.cnbc.com/id/10001147/device/rss/rss.html",                      source: "CNBC",             sector: "Macro", paywall: false },
+  { url: "https://unquote.com/feeds/rss",                                              source: "Unquote",          sector: "PE",    paywall: true  },
+  { url: "https://feeds.content.dowjones.io/public/rss/RSSMarketsMain",               source: "WSJ Markets",      sector: "Macro", paywall: true  },
   
-  // ── High Volume (Google News Curated) ─────────────────────────────
-  { url: "https://news.google.com/rss/search?q=site%3Abloomberg.com+(%22private+equity%22+OR+%22private+credit%22+OR+secondaries+OR+%22continuation+fund%22+OR+%22NAV+loan%22+OR+fundraising)&hl=en-US&gl=US&ceid=US:en", source: "Google (Bloomberg)", sector: "PE", paywall: true },
-  { url: "https://news.google.com/rss/search?q=site%3Aft.com+(%22private+equity%22+OR+%22private+credit%22+OR+secondaries+OR+%22continuation+fund%22+OR+fundraising)&hl=en-US&gl=US&ceid=US:en", source: "Google (FT)", sector: "PE", paywall: true },
-  { url: "https://news.google.com/rss/search?q=site%3Areuters.com+(%22private+equity%22+OR+%22private+credit%22+OR+secondaries+OR+%22continuation+fund%22+OR+fundraising)&hl=en-US&gl=US&ceid=US:en", source: "Google (Reuters)", sector: "PE", paywall: false },
-  { url: "https://news.google.com/rss/search?q=pitchbook+(private+equity+OR+private+credit+OR+secondaries+OR+fundraising)&hl=en-US&gl=US&ceid=US:en", source: "Google (PitchBook)", sector: "PE", paywall: false },
-  { url: "https://news.google.com/rss/search?q=preqin+(private+markets+OR+alternatives+OR+private+equity+OR+private+credit)&hl=en-US&gl=US&ceid=US:en", source: "Google (Preqin)", sector: "PE", paywall: false },
-  { url: "https://news.google.com/rss/search?q=%22commercial+real+estate%22+OR+REIT+OR+%22logistics+fund%22+when:1d&hl=en-US&gl=US&ceid=US:en", source: "Google (Real Estate)", sector: "RE", paywall: false },
-  { url: "https://news.google.com/rss/search?q=%22infrastructure+fund%22+OR+%22energy+transition%22+OR+%22digital+infrastructure%22+when:1d&hl=en-US&gl=US&ceid=US:en", source: "Google (Infra)", sector: "Infra", paywall: false }
+  // ── Macro / Multi & Restored Heavyweights ───────────
+  { url: "https://feeds.reuters.com/reuters/businessNews",           source: "Reuters",         sector: "Macro", paywall: false },
+  { url: "https://feeds.reuters.com/reuters/financialNews",          source: "Reuters Finance", sector: "Macro", paywall: false },
+  { url: "https://news.google.com/rss/search?q=pitchbook+%22private+equity%22+OR+%22private+credit%22+OR+%22venture+capital%22&hl=en-US&gl=US&ceid=US:en", source: "PitchBook News", sector: "PE", paywall: false },
+  { url: "https://news.google.com/rss/search?q=%22cambridge+associates%22+%22private+equity%22+OR+%22private+markets%22+OR+%22alternatives%22&hl=en-US&gl=US&ceid=US:en", source: "Cambridge Associates", sector: "Macro", paywall: false },
+  { url: "https://news.google.com/rss/search?q=site%3Abloomberg.com+(%22private+equity%22+OR+%22private+credit%22)&hl=en-US&gl=US&ceid=US:en", source: "Bloomberg (Google)", sector: "PE", paywall: true },
+  { url: "https://news.google.com/rss/search?q=preqin+(%22private+equity%22+OR+%22private+credit%22)&hl=en-US&gl=US&ceid=US:en", source: "Preqin (Google)", sector: "PE", paywall: false },
+  { url: "https://news.google.com/rss/search?q=site%3Ainstitutionalinvestor.com+%22private+markets%22+OR+%22private+equity%22+OR+%22hedge+fund%22&hl=en-US&gl=US&ceid=US:en", source: "Inst. Investor", sector: "Macro", paywall: false }
 ];
 
-const PROXY_URL = "https://api.rss2json.com/v1/api.json?rss_url=";
-const QUALITY_THRESHOLD_LIVE = 60;
-const LIVE_MAX_ITEMS = 12;
-const DAILY_BRIEF_MAX_ITEMS = 8;
+const RSS2JSON = "https://api.rss2json.com/v1/api.json?rss_url=";
 
-const HIGH_SIGNAL_RE = /(first close|final close|hard cap|fundraise|raised|closing|close[d]? on|take-?private|lbo|acquir|sale|divest|ipo|continuation|gp-led|secondaries|nav (loan|facility)|subscription line|refinanc|redemption|gate|liquidity|distress|default|restructur|leverage|unitranche|direct lending|private credit|aum|ir{2}|tvpi|dpi|valuation|multiple|dry powder|co-investment|commitment|lp|general partner)/i;
-const LOW_SIGNAL_RE  = /(podcast|sponsored|advertis|webinar|catch up|opinion|substack|newsletter only|roundup|briefing|morning note)/i;
+// Time window filter (last N days)
+const MAX_DAYS = 30;
+const AI_ENABLED = true; // requires proxy
+const API_BASE = ""; // set to proxy base URL, e.g. https://your-proxy
 
-// Here is the updated list including PitchBook in TIER1
-const TIER1 = ['Financial Times','FT','Reuters','Bloomberg','PEI','Private Equity International','Secondaries Investor','Infra Investor','PE Wire', 'PitchBook'];
-const TIER2 = ['Institutional Investor','Unquote','AltAssets','WSJ','Wall Street Journal','The Economist','Fortune','Google'];
 
-function classifyTheme(a) {
-  const t = ((a.title||'') + ' ' + (a.body||'')).toLowerCase();
-  if (/(redemption|gate|liquidity|default|distress|restructur)/i.test(t)) return 'Liquidity / Stress';
-  if (/(fundraise|first close|final close|hard cap|close[d]? on|raised)/i.test(t)) return 'Fundraising';
-  if (/(nav (loan|facility)|subscription line|direct lending|private credit|unitranche|leveraged loan)/i.test(t)) return 'Credit / Financing';
-  if (/(take-?private|lbo|acquir|sale|divest|ipo|merger|m&a)/i.test(t)) return 'Transactions';
-  if (/(gp stakes|stake sale|minority stake|gp-led|continuation|secondaries)/i.test(t)) return 'Secondaries / GP Stakes';
-  if (/(ai|artificial intelligence|data center|datacenter)/i.test(t)) return 'AI Impact';
-  return 'Market';
+function isWithinTimeWindow(pubDate) {
+  if (!pubDate) return false;
+  const t = new Date(pubDate).getTime();
+  if (!isFinite(t)) return false;
+  const diff = Date.now() - t;
+  return diff <= MAX_DAYS * 24 * 60 * 60 * 1000;
+}
+
+// Keyword-based sector guesser
+const SECTOR_KEYWORDS = {
+  PE:     ["private equity","buyout","lbo","kkr","carlyle","blackstone","apollo","eqt","warburg","advent","bain capital", "venture capital", "growth equity"],
+  Credit: ["private credit","direct lending","credit fund","private debt","leveraged loan","ares","blue owl","golub"],
+  Infra:  ["infrastructure","infrastructure investor","infra fund","infrastructure fund","renewable","renewables","energy transition","solar","wind","battery","storage","grid","transmission","utility","utilities","digital infrastructure","data center","datacenter","fiber","fibre","tower","towers","airport","ports","port","toll road","rail","railway","pipeline","lng","terminal","brookfield","macquarie","ifm","global infrastructure partners","gip","kkr infrastructure","stonepeak"],
+  RE:     ["real estate","property","reit","repe","real estate private equity","commercial property","commercial real estate","cre","office","offices","logistics","warehouse","industrial","multifamily","residential","housing","student housing","senior housing","build-to-rent","btr","hotel","hospitality","self storage","self-storage","storage reit","data center real estate","life sciences real estate","blackstone real estate","brookfield real estate","kkr real estate"],
+  Hedge:  ["hedge fund","long/short","multi-strategy","macro fund","bridgewater","citadel","millennium"],
+  Macro:  ["interest rate","federal reserve","fed","inflation","gdp","central bank","ecb","monetary","pension","sovereign wealth"],
+};
+
+// ─────────────────────────────────────
+// ALT-ONLY FILTER (sector-aware, Infra/RE friendly)
+// ─────────────────────────────────────
+const FILTER_MODE = 'smart'; // 'off' | 'smart'
+
+const EXCLUDE_NOISE = [
+  "crypto","bitcoin","ethereum","meme stock","sports betting","celebrity","fashion",
+  "iphone","android","retail trading","day trading","earnings call"
+];
+
+// Broad but still "alts" oriented
+const ALT_CORE = [
+  "private markets","alternative investments","alternatives",
+  "private equity","buyout","lbo","gp","lp","limited partner","general partner",
+  "fundraising","first close","final close","hard cap","second close",
+  "private credit","direct lending","private debt","special situations",
+  "secondaries","secondary","gp-led","continuation fund",
+  "nav loan","nav facility","subscription line",
+  "infrastructure fund","real estate fund","repe","hedge fund", "venture capital"
+];
+
+// Relaxed dictionaries for Infra/RE so they don't get filtered out
+const INFRA_RELAX = [
+  "infrastructure","renewable","energy transition","solar","wind","battery","grid","utility",
+  "digital infrastructure","data center","datacenter","fiber","fibre","tower","airport","port","toll road","rail","pipeline","lng"
+];
+
+const RE_RELAX = [
+  "real estate","property","reit","commercial real estate","cre","logistics","warehouse",
+  "multifamily","housing","student housing","self storage","self-storage","hospitality","office"
+];
+
+// If the source is already a niche alts outlet, be lenient
+const TRUSTED_ALTS_SOURCES = [
+  "PE Wire","Infra Investor","Infrastructure Investor","PERE","PERE News","PEI","Unquote","Buyouts Insider",
+  "AltAssets","PitchBook","Opalesque","Harvard Law","Institutional Investor","Global SWF","Alternative Credit Investor",
+  "Mingtiandi", "TechCrunch VC", "Bloomberg (Google)"
+];
+
+const TIER1 = ['Financial Times','FT','Reuters','Bloomberg','PEI','Private Equity International','Secondaries Investor','Infra Investor','PE Wire', 'PitchBook', 'Mingtiandi'];
+const TIER2 = ['Institutional Investor','Unquote','AltAssets','WSJ','Wall Street Journal','The Economist','Fortune','Google', 'TechCrunch VC'];
+
+
+function textHasAny(t, arr) {
+  return arr.some(k => t.includes(k));
+}
+
+function isAltRelevant(item) {
+  const t = ((item.title || "") + " " + (item.body || "")).toLowerCase();
+
+  // kill obvious noise early
+  if (textHasAny(t, EXCLUDE_NOISE)) return false;
+
+  const isTrusted = TRUSTED_ALTS_SOURCES.some(s => (item.source || "").toLowerCase().includes(s.toLowerCase()));
+
+  if (item.sector === "Infra") {
+    return isTrusted || textHasAny(t, INFRA_RELAX) || textHasAny(t, ALT_CORE);
+  }
+
+  if (item.sector === "RE") {
+    return isTrusted || textHasAny(t, RE_RELAX) || textHasAny(t, ALT_CORE);
+  }
+
+  // PE/Credit/Hedge/Macro: stricter
+  return isTrusted || textHasAny(t, ALT_CORE);
+}
+
+// Alt-markets allowlist filter (to keep feed strictly alternatives) 
+function guessSector(title, body, defaultSector) {
+  const t = ((title||'') + ' ' + (body||'')).toLowerCase();
+
+  // Credit first — avoid "Breit" falsely matching reit
+  if (/(private credit|direct lending|private debt|unitranche|mezzanine|leveraged loan|bdc|distressed debt)/i.test(t)) return 'Credit';
+  if (/\bcredit\b.*(spread|fund|facility|lending|loan)/i.test(t)) return 'Credit';
+
+  // Infrastructure
+  if (/(infrastructure|infra fund|digital infra|data cent(er|re)|renewable(s)?|energy transition|clean energy|solar farm|wind farm|offshore wind|battery storage|power grid|toll road|airport|seaport|pipeline|lng terminal|fiber network|cell tower)/i.test(t)) return 'Infra';
+  if (/(stonepeak|macquarie infra|brookfield infra|\bgip\b|ifm investors)/i.test(t)) return 'Infra';
+
+  // Real Estate
+  if (/(real estate|commercial property|\brepe\b|multifamily|residential property|office (building|market|space)|logistics park|warehouse|build.to.rent|student housing|senior housing|self.storage|cap rate|\bnoi\b|vacancy rate|rent growth)/i.test(t)) return 'RE';
+  if (/\breit\b/i.test(t)) return 'RE';
+  if (/(prologis|hines|cbre|jll|cushman|mingtiandi)/i.test(t)) return 'RE';
+
+  // Hedge
+  if (/(hedge fund|long.short|multi.strategy|global macro|quant fund|managed futures|activist investor|short seller|event.driven)/i.test(t)) return 'Hedge';
+
+  return defaultSector;
 }
 
 function qualityScore(a) {
@@ -937,171 +1179,247 @@ function qualityScore(a) {
   else if (TIER2.some(x => a.source.includes(x))) score += 20;
   else score += 12;
 
-  if (HIGH_SIGNAL_RE.test(text)) score += 30;
-  if (LOW_SIGNAL_RE.test(text)) score -= 30;
-  
+  // Additional points for core alternative markets
   if (a.sector === 'PE' || a.sector === 'Credit' || a.sector === 'Infra') score += 5;
   if (a.time.includes('h ago') || a.time.includes('just now')) score += 10;
 
   return Math.max(0, Math.min(100, score));
 }
 
+function estimateRelevance(title, body) {
+  const text = (title + " " + body).toLowerCase();
+  const allKw = Object.values(SECTOR_KEYWORDS).flat();
+  return Math.min(55 + allKw.filter(kw => text.includes(kw)).length * 6, 98);
+}
+
+let currentFilter = 'all';
+let briefingText = '';
+let articles = [];
+let nextId = 1;
+
+
+// Auto-refresh (keeps analysts up to date without manual refresh)
+let AUTO_REFRESH_MS = 4 * 60 * 1000; // 4 minutes
+let autoTimer = null;
+
+function startAutoRefresh() {
+  stopAutoRefresh();
+  autoTimer = setInterval(() => loadArticles(currentFilter), AUTO_REFRESH_MS);
+}
+
+function stopAutoRefresh() {
+  if (autoTimer) clearInterval(autoTimer);
+  autoTimer = null;
+}
+
+// Pause refresh when tab is not visible (reduces quota / rate-limit risk)
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) stopAutoRefresh();
+  else startAutoRefresh();
+});
+
+
+// ─────────────────────────────────────
+// INIT
+// ─────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  const d = new Date();
+  document.getElementById('current-date').textContent =
+    d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('email-subject-preview').textContent =
+    `ALT·Intel Morning Briefing — ${d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' })}`;
+
+  await loadArticles();
+  startAutoRefresh();
+});
+
+// ─────────────────────────────────────
+// LOAD REAL RSS FEEDS
+// ─────────────────────────────────────
+async function fetchFeed(feed) {
+  const enc = encodeURIComponent(feed.url);
+
+  const mapItems = (items, urlField) => items.map(item => {
+    const title = item.title || '';
+    const body = (item.description || item.content || '').replace(/<[^>]+>/g, '').substring(0, 300);
+    const sec = guessSector(title, body, feed.sector);
+    const q = { title, body, sector: sec, source: feed.source, time: item.pubDate || item.updated || '' };
+    
+    return {
+      id: nextId++,
+      title: title,
+      body: body,
+      url: item[urlField] || item.link || '',
+      source: feed.source,
+      sector: sec,
+      rel: estimateRelevance(title, body),
+      qscore: qualityScore(q),
+      time: timeAgo(item.pubDate || item.updated || ''),
+      _pubDate: item.pubDate || item.updated || null,
+      _ts: new Date(item.pubDate || item.updated || 0).getTime() || 0,
+      paywall: feed.paywall || false,
+      aiSummary: null,
+    };
+  });
+
+  // ── Proxy 1: rss2json (fast, cached) ──────────────
+  try {
+    const res = await Promise.race([
+      fetch(`${RSS2JSON}${enc}&count=20`),
+      new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 7000))
+    ]);
+    const data = await res.json();
+    if (data.status === 'ok' && data.items?.length) {
+      console.log(`✓ ${feed.source}: ${data.items.length} [rss2json]`);
+      return mapItems(data.items, 'link');
+    }
+  } catch(e) { /* fall through */ }
+
+  // ── Proxy 2: corsproxy.io (works from GitHub Pages, handles FT/CNBC/Bloomberg) ──
+  try {
+    const res = await Promise.race([
+      fetch(`https://corsproxy.io/?${enc}`),
+      new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 8000))
+    ]);
+    const xml = await res.text();
+    const doc = new DOMParser().parseFromString(xml, 'text/xml');
+    if (!doc.querySelector('parsererror')) {
+      const els = Array.from(doc.querySelectorAll('item, entry'));
+      if (els.length) {
+        const items = els.map(el => {
+          const linkEl = el.querySelector('link');
+          const link = linkEl?.getAttribute('href') || linkEl?.textContent?.trim() || el.querySelector('guid')?.textContent?.trim() || '';
+          return {
+            title:       el.querySelector('title')?.textContent?.trim() || '',
+            link,
+            description: (el.querySelector('description')?.textContent || el.querySelector('summary')?.textContent || '').trim(),
+            pubDate:     (el.querySelector('pubDate')?.textContent || el.querySelector('updated')?.textContent || '').trim(),
+          };
+        }).filter(x => x.title && x.link);
+        if (items.length) {
+          console.log(`✓ ${feed.source}: ${items.length} [corsproxy]`);
+          return mapItems(items, 'link');
+        }
+      }
+    }
+  } catch(e) { /* fall through */ }
+
+  console.warn(`✗ Feed failed: ${feed.source}`);
+  return [];
+}
+
+async function loadArticles(sector = null) {
+  document.getElementById('feed-container').innerHTML =
+    `<div style="padding:40px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim)">Loading live feeds...</div>`;
+
+  nextId = 1;
+
+  const results = await Promise.all(RSS_FEEDS.map(fetchFeed));
+  let all = results.flat();
+
+  // Dedup by URL
+  const seen = new Set();
+  all = all.filter(a => {
+    const k = (a.url || '').split('?')[0];
+    if (!k || seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+
+  // Sort by recency
+  all.sort((a, b) => (b._ts || 0) - (a._ts || 0));
+
+  if (all.length === 0) {
+    articles = getDemoArticles();
+  } else {
+    articles = all;
+  }
+
+  // Live briefing = top by qscore from last 24h
+  const h24 = Date.now() - 24 * 60 * 60 * 1000;
+  window._liveArticles = articles
+    .filter(a => !a._ts || a._ts >= h24)
+    .sort((a, b) => (b.qscore || 0) - (a.qscore || 0))
+    .slice(0, 12);
+
+  currentFilter = sector || 'all';
+  renderHero();
+  renderFeed();
+  renderSidebar();
+}
+
+
 function timeAgo(dateStr) {
   if (!dateStr) return 'recently';
-  const t = new Date(dateStr.replace(/-/g, '/')).getTime();
-  if (isNaN(t)) return 'recently';
-  const diff = Date.now() - t;
+  const diff = Date.now() - new Date(dateStr).getTime();
   const h = Math.floor(diff / 3600000);
   if (h < 1) return 'just now';
   if (h < 24) return `${h}h ago`;
   return `${Math.floor(h/24)}d ago`;
 }
 
-function guessSector(title, body, defaultSector) {
-  const t = ((title||'') + ' ' + (body||'')).toLowerCase();
-  if (/(private credit|direct lending|unitranche)/i.test(t)) return 'Credit';
-  if (/(infrastructure|renewables|energy transition|data center)/i.test(t)) return 'Infra';
-  if (/(real estate|property|reit|multifamily|logistics)/i.test(t)) return 'RE';
-  if (/(hedge fund|long\/short|macro strategy)/i.test(t)) return 'Hedge';
-  return defaultSector;
-}
-
-let currentFilter = 'all';
-let articles = [];
-let nextId = 1;
-let autoTimer = null;
-
-document.addEventListener('DOMContentLoaded', async () => {
-  const d = new Date();
-  document.getElementById('current-date').textContent =
-    d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-  document.getElementById('email-subject-preview').textContent =
-    `ALT·Intel Morning Briefing — ${d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}`;
-
-  await loadArticles();
-  
-  // Auto refresh changed to 10 min to protect API limits
-  autoTimer = setInterval(loadArticles, 10 * 60 * 1000);
-});
-
-async function fetchFeed(feed) {
-  try {
-    // Added a random parameter to help bust the cache when possible
-    const nocache = Math.floor(Math.random() * 10000);
-    const proxyTarget = PROXY_URL + encodeURIComponent(feed.url) + `&t=${nocache}`;
-    const res = await fetch(proxyTarget);
-    const data = await res.json();
-    
-    if (data.status !== 'ok') {
-      console.warn('Feed failed:', feed.source);
-      return [];
-    }
-
-    return data.items.map(item => {
-      const title = item.title;
-      const body = item.description.replace(/<[^>]*>/g, ' ').substring(0, 300);
-      const sec = guessSector(title, body, feed.sector);
-      const q = { title, body, sector: sec, source: feed.source, time: item.pubDate };
-
-      return {
-        id: nextId++,
-        title: title,
-        body: body,
-        url: item.link,
-        source: feed.source,
-        sector: sec,
-        paywall: feed.paywall,
-        time: timeAgo(item.pubDate),
-        _ts: new Date(item.pubDate).getTime(),
-        rel: 70, 
-        qscore: qualityScore(q),
-        theme: classifyTheme(q)
-      };
-    });
-  } catch (e) {
-    console.error('Network error:', feed.source);
-    return [];
-  }
-}
-
-async function loadArticles() {
-  const ico = document.getElementById('refresh-ico');
-  if(ico) ico.classList.add('spin');
-  document.getElementById('feed-container').innerHTML =
-    `<div style="padding:40px 0;text-align:center;font-family:'JetBrains Mono',monospace;color:var(--ink-dim)">Loading live feeds...</div>`;
-
-  nextId = 1;
-  const promises = RSS_FEEDS.map(fetchFeed);
-  const results = await Promise.all(promises);
-  let all = results.flat();
-
-  // Deduplicate by URL
-  const seen = new Set();
-  all = all.filter(a => {
-    const k = a.url;
-    if(seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
-
-  // Sort by date desc initially
-  all.sort((a,b) => b._ts - a._ts);
-
-  if (all.length === 0) {
-    articles = getDemoArticles(); 
-  } else {
-    articles = all;
-  }
-
-  window._liveArticles = articles.filter(a => a.qscore > QUALITY_THRESHOLD_LIVE).slice(0, LIVE_MAX_ITEMS);
-  
-  renderHero();
-  renderFeed();
-  renderSidebar();
-  
-  if(ico) ico.classList.remove('spin');
-}
-
+// ─────────────────────────────────────
+// HERO
+// ─────────────────────────────────────
 function renderHero() {
-  // Sort by qscore (quality) descending, take the top 3
-  const top3 = [...articles].sort((a, b) => (b.qscore || 0) - (a.qscore || 0)).slice(0, 3);
-  
+  const now = Date.now();
+  const h24 = 24 * 60 * 60 * 1000;
+
+  // Top 3 by qscore from last 24 hours; fallback to all articles if not enough
+  let pool = articles.filter(a => a._ts && (now - a._ts) <= h24);
+  if (pool.length < 3) pool = articles; // fallback to all if feeds are slow
+
+  const top3 = pool.slice().sort((a,b) => (b.qscore||0) - (a.qscore||0)).slice(0,3);
+
   const colors = { PE:'var(--pe-c)', Credit:'var(--credit-c)', Infra:'var(--infra-c)', RE:'var(--re-c)', Hedge:'var(--hedge-c)', Macro:'var(--macro-c)' };
-  const hero = document.getElementById('hero-strip');
-  if(!hero) return;
-  
-  hero.innerHTML = top3.map(a => `
-    <a class="hero-story" href="${a.url}" target="_blank" style="text-decoration:none; color:inherit; display:block;">
-      <div class="hero-kicker" style="color:${colors[a.sector] || 'var(--ink-mid)'}">${a.sector} · ${a.source}</div>
+
+  document.getElementById('hero-strip').innerHTML = top3.map(a => `
+    <a class="hero-story" href="${a.url || '#'}" target="_blank" style="cursor:pointer; text-decoration:none; color:inherit; display:block;">
+      <div class="hero-kicker" style="color:${colors[a.sector] || 'var(--ink-mid)'}">
+        ${a.sector} · ${a.source}
+        <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--ink-dim);margin-left:8px;">${a.time}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:8px;background:${colors[a.sector]||'var(--ink-dim)'};color:#fff;padding:1px 5px;margin-left:4px;opacity:0.85;">${a.qscore||0}</span>
+      </div>
       <div class="hero-headline">${a.title}</div>
-      <div class="hero-deck">${(a.body||'').substring(0,120)}…</div>
+      <div class="hero-deck">${(a.body||'').substring(0,130)}…</div>
     </a>
   `).join('');
 }
 
-function renderFeed() {
-  const base = articles;
-  const live = window._liveArticles || [];
-  
-  let list = [];
-  if (currentFilter === 'live') {
-      list = live;
-  } else if (currentFilter === 'all') {
-      list = base;
-  } else {
-      list = base.filter(a => a.sector === currentFilter);
-  }
+// ─────────────────────────────────────
+// FEED
+// ─────────────────────────────────────
 
-  document.getElementById('feed-count').textContent = `— ${list.length} articles`;
+function whyItMatters(a) {
+  const t = ((a.title||'') + ' ' + (a.body||'')).toLowerCase();
+  if (/(first close|final close|fundraise|raised|hard cap|close on)/i.test(t)) return 'LP allocation signal — indicates appetite for this strategy and vintage.';
+  if (/(lbo|take.private|acqui|buyout|merger)/i.test(t)) return 'Deal activity — relevant for comparable valuations and sector momentum.';
+  if (/(secondar|gp.led|continuation|gp stake)/i.test(t)) return 'Liquidity signal — reflects GP sentiment and portfolio valuations.';
+  if (/(nav loan|direct lending|private credit|unitranche)/i.test(t)) return 'Credit market signal — impacts cost of capital and deal structuring.';
+  if (/(default|distress|restructur|redemption|gate)/i.test(t)) return 'Watch for contagion risk — potential impact on valuations and redemptions.';
+  if (a.sector === 'Infra') return 'Infrastructure deployment signal — energy transition and digital infra remain LP priorities.';
+  if (a.sector === 'RE') return 'Real estate repricing — cap rate movements affect RE fund NAVs and exit timing.';
+  if (a.sector === 'Credit') return 'Credit dynamics — directly affects direct lending returns and deal flow.';
+  if (a.sector === 'Hedge') return 'Hedge fund positioning — relevant for liquid alts allocators.';
+  return 'Private markets intelligence — relevant for LP allocators and fund managers.';
+}
+
+function renderFeed() {
+  const list = currentFilter === 'all' ? articles : articles.filter(a => a.sector === currentFilter);
+  document.getElementById('feed-count').textContent = `— ${list.length} article${list.length !== 1 ? 's' : ''}`;
 
   if (!list.length) {
-    document.getElementById('feed-container').innerHTML = `<div style="padding:40px 0; text-align:center; font-family:'JetBrains Mono',monospace;">No articles found.</div>`;
+    document.getElementById('feed-container').innerHTML = `<div style="padding:40px 0; text-align:center; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink-dim)">No articles in this sector</div>`;
     return;
   }
 
   document.getElementById('feed-container').innerHTML = list.map((a, i) => {
+    const rel = a.rel || 75;
+    const dots = Array(5).fill(0).map((_,d) => `<span class="rel-dot ${d < Math.round(rel/20) ? 'filled' : ''}"></span>`).join('');
+    const articleUrl = a.url || a.link || '#';
+    const isPaywall = a.paywall && (!a.url || a.url === '#');
     return `
-    <a class="article" style="animation-delay:${i * 0.05}s; text-decoration:none; color:inherit;" href="${a.url}" target="_blank">
+    <a class="article" style="animation-delay:${i * 0.04}s; text-decoration:none; color:inherit; display:grid; grid-template-columns:1fr auto; gap:16px;" href="${articleUrl}" target="_blank">
       <div class="article-left">
         <div class="article-kicker">
           <span class="sector-pill ${a.sector}">${a.sector}</span>
@@ -1109,9 +1427,25 @@ function renderFeed() {
           <span class="article-time">${a.time}</span>
         </div>
         <div class="article-headline">${a.title}</div>
-        <div class="article-body">${a.body.substring(0,180)}...</div>
+        <div class="article-body">${a.body || ''}</div>
+        <div class="article-why"><span class="why-label">Why it matters</span>${whyItMatters(a)}</div>
+        ${a.aiSummary ? `
+        <div class="ai-summary-wrap">
+          <div class="ai-label">✦ AI Analysis</div>
+          <div class="ai-text">${a.aiSummary}</div>
+        </div>
+        ` : ''}
         <div class="article-actions">
-          ${a.paywall ? '<span class="read-more">🔒 Full Story</span>' : '<span class="read-more">Read Free →</span>'}
+          ${a.paywall
+            ? '<span class="read-more">🔒 Read Article →</span>'
+            : '<span class="read-more">Read Free →</span>'
+          }
+          <div class="rel-score"><div class="rel-dots">${dots}</div>${rel}%</div>
+          <button class="action-btn ${a.aiSummary ? 'summarized' : ''}"
+            onclick="event.preventDefault(); event.stopPropagation(); summarize(${a.id}, this);"
+            ${a.aiSummary ? 'disabled' : ''}>
+            ${a.aiSummary ? '✓ Analyzed' : '⚡ AI Analyze'}
+          </button>
         </div>
       </div>
       <div class="article-right">
@@ -1121,6 +1455,24 @@ function renderFeed() {
   `}).join('');
 }
 
+function filter(sector, btn) {
+  currentFilter = sector;
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFeed();
+  renderSidebar();
+}
+
+async function loadFeed() {
+  const ico = document.getElementById('refresh-ico');
+  ico.classList.add('spin');
+  await loadArticles();
+  ico.classList.remove('spin');
+}
+
+// ─────────────────────────────────────
+// SIDEBAR
+// ─────────────────────────────────────
 function renderSidebar() {
   const sectors = ['PE','Credit','Infra','RE','Hedge','Macro'];
   const c = { PE:'var(--pe-c)', Credit:'var(--credit-c)', Infra:'var(--infra-c)', RE:'var(--re-c)', Hedge:'var(--hedge-c)', Macro:'var(--macro-c)' };
@@ -1132,75 +1484,164 @@ function renderSidebar() {
   document.getElementById('sector-stats').innerHTML = sectors.map(s => `
     <div class="sector-stat">
       <span class="stat-name" style="color:${c[s]}">${s}</span>
-      <div class="stat-bar"><div class="stat-fill" style="width:${(counts[s]/max)*100}%; background:${c[s]}"></div></div>
+      <div class="stat-bar"><div class="stat-fill" style="width:${counts[s]/max*100}%; background:${c[s]}"></div></div>
       <span class="stat-n">${counts[s]}</span>
     </div>
   `).join('');
-  
-  const srcs = {};
-  articles.forEach(a => srcs[a.source] = (srcs[a.source]||0)+1);
-  const topSrcs = Object.entries(srcs).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  
-  document.getElementById('sources-widget').innerHTML = topSrcs.map(([name, n]) => `
+
+  // Group articles by source for sidebar
+  const sourceCounts = {};
+  articles.forEach(a => { sourceCounts[a.source] = (sourceCounts[a.source] || 0) + 1; });
+  const sources = Object.entries(sourceCounts).sort((x,y) => y[1]-x[1]).slice(0,8);
+
+  // Fallback missing sources variable to empty array if not defined previously
+  const FALLBACK_SOURCES = [];
+
+  document.getElementById('sources-widget').innerHTML = (sources.length ? sources : FALLBACK_SOURCES.map(s => [s.name, s.count])).map(([name, count]) => `
     <div class="source-row">
-      <span class="source-n">${n}</span>
+      <span class="source-n">${count}</span>
       <span class="source-label">${name}</span>
-      <span class="source-status-dot on"></span>
+      <span class="source-status-dot ${count > 0 ? 'on' : 'off'}"></span>
     </div>
   `).join('');
 }
 
-function filter(sec, btn) {
-  currentFilter = sec;
-  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  renderFeed();
+// ─────────────────────────────────────
+// AI: SINGLE ARTICLE — via backend
+// ─────────────────────────────────────
+async function summarize(id, btn) {
+  try {
+    if (!AI_ENABLED) { alert('AI is disabled. Configure the proxy and set AI_ENABLED=true.'); return; }
+
+    const a = articles.find(x => x.id === id);
+    if (!a) return;
+    if (btn) btn.disabled = true;
+
+    const res = await fetch((API_BASE ? `${API_BASE}/api/summarize` : `/api/summarize`), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: a.title,
+        url: a.url,
+        source: a.source,
+        sector: a.sector,
+        excerpt: a.body || ''
+      })
+    });
+
+    if (!res.ok) throw new Error(`Summarize failed: ${res.status}`);
+    const data = await res.json();
+
+    a.aiSummary = data.summary || '';
+    a.aiScore = data.score ?? null;
+
+    // re-render current view
+    renderFeed(currentFilter);
+  } catch (e) {
+    console.error(e);
+    alert('AI Analyze failed. Check proxy is running and API key is set.');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
-function loadFeed() {
-  loadArticles();
+// ─────────────────────────────────────
+// AI: DAILY BRIEFING — via backend
+// ─────────────────────────────────────
+async function generateBriefing() {
+  try {
+    const btn = document.getElementById('gen-btn');
+    if (btn) btn.disabled = true;
+
+    // Use the currently displayed list (filtered + sorted)
+    const items = (window._visibleArticles || articles || []).slice(0, 30).map(a => ({
+      title: a.title,
+      url: a.url,
+      source: a.source,
+      sector: a.sector,
+      time: a.time
+    }));
+
+    const res = await fetch((API_BASE ? `${API_BASE}/api/briefing` : `/api/briefing`), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items })
+    });
+
+    if (!res.ok) throw new Error(`Briefing failed: ${res.status}`);
+    const data = await res.json();
+
+    const out = document.getElementById('briefing-output');
+    if (out) out.textContent = data.briefing || '';
+  } catch (e) {
+    console.error(e);
+    alert('Briefing failed. Check proxy is running and API key is set.');
+  } finally {
+    const btn = document.getElementById('gen-btn');
+    if (btn) btn.disabled = false;
+  }
+}
+
+// ─────────────────────────────────────
+// EMAIL MODAL
+// ─────────────────────────────────────
+function openEmailModal() {
+  document.getElementById('email-modal').classList.add('open');
+}
+
+function closeEmailModal() {
+  document.getElementById('email-modal').classList.remove('open');
+  document.getElementById('success-msg').classList.remove('show');
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('email-modal')) closeEmailModal();
+}
+
+async function subscribe() {
+  const email = document.getElementById('email-input').value.trim();
+  if (!email || !email.includes('@')) {
+    document.getElementById('email-input').style.borderColor = 'var(--accent)';
+    return;
+  }
+  const btn = document.getElementById('subscribe-btn');
+  btn.disabled = true; btn.textContent = '...';
+
+  try {
+    const res = await fetch(`${API_BASE}/subscribe`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('email-preview-section').style.display = 'none';
+      document.getElementById('success-msg').classList.add('show');
+    } else {
+      btn.disabled = false; btn.textContent = 'Subscribe';
+    }
+  } catch(e) {
+    // Offline fallback
+    document.getElementById('email-preview-section').style.display = 'none';
+    document.getElementById('success-msg').classList.add('show');
+  }
+}
+
+function openArticle(a) {
+  const url = a.url || a.link;
+  if (url && url !== '#') {
+    window.open(url, '_blank');
+  }
 }
 
 function getDemoArticles() {
   return [
-    { id:1, sector:"PE", source:"PE Wire", title:"Permira Sells Evelyn Partners to NatWest for £2.7bn", body:"Permira agreed to sell UK wealth manager Evelyn Partners to NatWest Group for £2.7bn...", url:"#", time:"2h ago", rel:95, paywall:true },
-    { id:2, sector:"Credit", source:"Bloomberg", title:"Apollo Posts 13% Rise in Q4 Profit", body:"Apollo Global Management posted a 13% rise in fourth-quarter profit...", url:"#", time:"4h ago", rel:91, paywall:true },
-    { id:3, sector:"Infra", source:"Infra Investor", title:"Brookfield Closes $28B Infrastructure Fund V", body:"Brookfield Asset Management has closed its fifth flagship infrastructure fund...", url:"#", time:"5h ago", rel:88, paywall:true }
+    { id:1, sector:"PE", source:"Private Equity Wire", title:"Permira and Warburg Pincus Sell Evelyn Partners to NatWest for £2.7bn", body:"Permira and Warburg Pincus agreed to sell UK wealth manager Evelyn Partners to NatWest Group for £2.7bn, marking a major consolidation in UK private banking and a significant liquidity event for both PE firms.", time:"2h ago", rel:95, aiSummary:null, url:"https://www.privateequitywire.co.uk/news/" },
+    { id:2, sector:"PE", source:"Private Equity Wire", title:"Thoma Bravo Eyes Software Market Downturn Dubbed the SaaSpocalypse", body:"Tech-focused buyout firm Thoma Bravo is looking to capitalise on the ongoing software market downturn, as a disconnect between high-quality firms and riskier software providers creates selective entry points for disciplined PE buyers.", time:"4h ago", rel:91, aiSummary:null, url:"https://www.privateequitywire.co.uk/news/" },
+    { id:3, sector:"Hedge", source:"Private Equity Wire", title:"Blackstone Expands Anthropic Stake to Around $1bn at $350bn Valuation", body:"Blackstone has expanded its investment in AI startup Anthropic, bringing its total stake to around $1bn at the current $350bn valuation, signalling continued institutional appetite for AI infrastructure exposure.", time:"5h ago", rel:88, aiSummary:null, url:"https://www.privateequitywire.co.uk/news/" },
+    { id:4, sector:"Credit", source:"Private Equity Wire", title:"Apollo Posts 13% Rise in Q4 Profit on Record Debt Origination", body:"Apollo Global Management posted a 13% rise in fourth-quarter profit, surpassing Wall Street estimates, driven by record debt origination and strong inflows from clients seeking private credit alternatives.", time:"7h ago", rel:87, aiSummary:null, url:"https://www.privateequitywire.co.uk/news/" },
+    { id:5, sector:"RE", source:"Private Equity Wire", title:"Brookfield and GIC Propose AUD4bn Take-Private of National Storage REIT", body:"National Storage REIT received a AUD4.02bn buyout proposal from a consortium led by Brookfield and GIC, marking what would be Australia largest real-estate take-private deal.", time:"9h ago", rel:84, aiSummary:null, url:"https://www.privateequitywire.co.uk/news/" },
   ];
-}
-
-// ─────────────────────────────────────
-// Briefing Logic
-// ─────────────────────────────────────
-function generateDailyBrief() {
-  const out = document.getElementById('briefing-output');
-  const items = (window._liveArticles || articles).slice(0, DAILY_BRIEF_MAX_ITEMS);
-  const dateStr = new Date().toLocaleDateString();
-  
-  let txt = `DAILY BRIEFING – ${dateStr}\n\n`;
-  items.forEach((a, i) => {
-    txt += `${i+1}. ${a.title.toUpperCase()}\n   Source: ${a.source} (${a.time})\n   Link: ${a.url}\n\n`;
-  });
-  
-  out.value = txt;
-}
-
-function emailBrief() {
-  const body = document.getElementById('briefing-output').value;
-  window.location.href = `mailto:?subject=Daily Briefing&body=${encodeURIComponent(body)}`;
-}
-
-// ─────────────────────────────────────
-// Modal
-// ─────────────────────────────────────
-function openEmailModal() { document.getElementById('email-modal').classList.add('open'); }
-function closeEmailModal() { document.getElementById('email-modal').classList.remove('open'); }
-function closeModalOutside(e) { if(e.target.id==='email-modal') closeEmailModal(); }
-function subscribe() {
-   document.getElementById('email-preview-section').style.display='none';
-   document.getElementById('success-msg').classList.add('show');
-}
-
-</script>
+}</script>
 </body>
 </html>
