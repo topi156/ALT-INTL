@@ -396,93 +396,6 @@ body::before {
   margin-bottom: 10px;
 }
 
-/* AI Summary */
-.ai-summary-wrap {
-  margin-top: 10px;
-  padding: 12px 14px;
-  background: rgba(26,74,138,0.04);
-  border-left: 3px solid var(--accent2);
-}
-
-.ai-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--accent2);
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.ai-text {
-  font-family: 'Crimson Pro', serif;
-  font-size: 14px;
-  color: var(--ink-mid);
-  line-height: 1.65;
-  font-weight: 300;
-  font-style: italic;
-}
-
-.typing-cursor {
-  display: inline-block;
-  width: 2px; height: 14px;
-  background: var(--accent2);
-  animation: blink 0.8s steps(1) infinite;
-  vertical-align: middle;
-  margin-right: 2px;
-}
-@keyframes blink { 50% { opacity:0; } }
-
-.article-actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-top: 6px;
-}
-
-.action-btn {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  background: transparent;
-  border: 1px solid var(--rule);
-  color: var(--ink-mid);
-  padding: 5px 12px;
-  cursor: pointer;
-  transition: all 0.15s;
-  display: flex; align-items: center; gap: 6px;
-}
-
-.action-btn:hover { border-color: var(--ink-mid); color: var(--ink); }
-.action-btn.summarized { border-color: var(--accent2); color: var(--accent2); }
-.action-btn:disabled { opacity: 0.35; pointer-events: none; }
-
-.read-more {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--ink-dim);
-  text-decoration: none;
-  transition: color 0.15s;
-  margin-right: auto;
-}
-.read-more:hover { color: var(--accent); }
-
-.paywall-badge {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--ink-dim);
-  border: 1px solid var(--rule);
-  padding: 2px 6px;
-  opacity: 0.6;
-}
-
 /* Article right col */
 .article-right {
   width: 80px;
@@ -1002,7 +915,8 @@ const DAILY_BRIEF_MAX_ITEMS = 8;
 const HIGH_SIGNAL_RE = /(first close|final close|hard cap|fundraise|raised|closing|close[d]? on|take-?private|lbo|acquir|sale|divest|ipo|continuation|gp-led|secondaries|nav (loan|facility)|subscription line|refinanc|redemption|gate|liquidity|distress|default|restructur|leverage|unitranche|direct lending|private credit|aum|ir{2}|tvpi|dpi|valuation|multiple|dry powder|co-investment|commitment|lp|general partner)/i;
 const LOW_SIGNAL_RE  = /(podcast|sponsored|advertis|webinar|catch up|opinion|substack|newsletter only|roundup|briefing|morning note)/i;
 
-const TIER1 = ['Financial Times','FT','Reuters','Bloomberg','PEI','Private Equity International','Secondaries Investor','Infra Investor','PE Wire'];
+// Here is the updated list including PitchBook in TIER1
+const TIER1 = ['Financial Times','FT','Reuters','Bloomberg','PEI','Private Equity International','Secondaries Investor','Infra Investor','PE Wire', 'PitchBook'];
 const TIER2 = ['Institutional Investor','Unquote','AltAssets','WSJ','Wall Street Journal','The Economist','Fortune','Google'];
 
 function classifyTheme(a) {
