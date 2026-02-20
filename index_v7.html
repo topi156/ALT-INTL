@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALT Intel – Private Markets Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=JetBrains+Mono:wght@300;400;500;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f2eb;
+  --bg2: #ede9df;
+  --surface: #ffffff;
+  --ink: #1a1612;
+  --ink-mid: #4a4540;
+  --ink-dim: #8a8278;
+  --rule: #d8d2c4;
+  --accent: #c4381a;
+  --accent2: #1a4a8a;
+  --gold: #b8860b;
+  --pe-c: #c4381a;
+  --credit-c: #1a4a8a;
+  --infra-c: #2a6a3a;
+  --re-c: #7a3a1a;
+  --hedge-c: #4a1a7a;
+  --macro-c: #1a5a6a;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Crimson Pro', Georgia, serif;
+  min-height: 100vh;
+  font-size: 16px;
+}
+
+/* Paper texture */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(0,0,0,0.015) 28px, rgba(0,0,0,0.015) 29px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── MASTHEAD ── */
+.masthead {
+  border-bottom: 3px double var(--ink);
+  padding: 0 48px;
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+
+.masthead-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0 12px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.pub-name {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.pub-name em {
+  color: var(--accent);
+  font-style: normal;
+}
+
+.masthead-meta {
+  text-align: center;
+}
+
+.masthead-meta .edition {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--ink-dim);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.masthead-meta .date-line {
+  font-family: 'Crimson Pro', serif;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ink-mid);
+}
+
+.masthead-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 9px 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover { background: var(--accent); }
+.btn-primary:disabled { opacity:0.4; pointer-events:none; }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-secondary:hover { border-color: var(--ink); }
+
+/* Filter nav */
+.masthead-nav {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 10px 0;
+  overflow-x: auto;
+}
+
+.nav-item {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 5px 18px;
+  border: none;
+  background: transparent;
+  color: var(--ink-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  border-right: 1px solid var(--rule);
+  position: relative;
+}
+
+.nav-item:first-child { padding-left: 0; }
+.nav-item:last-child { border-right: none; }
+
+.nav-item:hover { color: var(--ink); }
+.nav-item.active { color: var(--ink); font-weight: 700; }
+
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0; right: 0;
+  height: 3px;
+  background: var(--accent);
+}
+
+/* Ticker */
+.ticker {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 0;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.ticker-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  background: var(--accent);
+  color: white;
+  padding: 0 14px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.ticker-track { overflow: hidden; flex: 1; }
+.ticker-inner {
+  display: flex;
+  animation: ticker-scroll 60s linear infinite;
+  white-space: nowrap;
+}
+
+.ticker-item {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  padding: 0 40px;
+  color: rgba(245,242,235,0.75);
+}
+
+.ticker-item strong { color: var(--bg); font-weight: 500; }
+
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── LAYOUT ── */
+.page {
+  position: relative; z-index: 1;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 48px 60px;
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  grid-template-rows: auto 1fr;
+  gap: 0 40px;
+}
+
+/* ── HERO STORY ── */
+.hero-strip {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 32px;
+  padding: 28px 0;
+}
+
+.hero-story {
+  padding: 0 28px;
+  border-right: 1px solid var(--rule);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.hero-story:first-child { padding-left: 0; }
+.hero-story:last-child { border-right: none; }
+.hero-story:hover { opacity: 0.8; }
+
+.hero-kicker {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-headline {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 10px;
+  color: var(--ink);
+}
+
+.hero-deck {
+  font-family: 'Crimson Pro', serif;
+  font-size: 14px;
+  color: var(--ink-mid);
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+/* ── MAIN FEED ── */
+.feed-section { padding-top: 0; }
+
+.section-rule {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.section-rule h2 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--ink-dim);
+  white-space: nowrap;
+}
+
+.rule-line {
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+
+.article {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  transition: opacity 0.15s;
+  animation: slideIn 0.3s ease forwards;
+  opacity: 0;
+}
+
+@keyframes slideIn {
+  from { opacity:0; transform: translateY(8px); }
+  to { opacity:1; transform: translateY(0); }
+}
+
+.article:hover { opacity: 0.75; }
+.article:hover .article-headline { text-decoration: underline; text-underline-offset: 3px; }
+.article:last-child { border-bottom: none; }
+
+.article-left {}
+
+.article-kicker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 7px;
+}
+
+.sector-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  padding: 2px 8px;
+  border-left: 3px solid currentColor;
+  background: transparent;
+}
+
+.sector-pill.PE { color: var(--pe-c); background: rgba(196,56,26,0.06); }
+.sector-pill.Credit { color: var(--credit-c); background: rgba(26,74,138,0.06); }
+.sector-pill.Infra { color: var(--infra-c); background: rgba(42,106,58,0.06); }
+.sector-pill.RE { color: var(--re-c); background: rgba(122,58,26,0.06); }
+.sector-pill.Hedge { color: var(--hedge-c); background: rgba(74,26,122,0.06); }
+.sector-pill.Macro { color: var(--macro-c); background: rgba(26,90,106,0.06); }
+
+.article-source {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.article-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--ink-dim);
+}
+
+.article-headline {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 8px;
+  color: var(--ink);
+}
+
+.article-body {
+  font-family: 'Crimson Pro', serif;
+  font-size: 15px;
+  color: var(--ink-mid);
+  line-height: 1.65;
+  font-weight: 300;
+  margin-bottom: 10px;
+}
+
+/* AI Summary */
+.ai-summary-wrap {
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: rgba(26,74,138,0.04);
+  border-left: 3px solid var(--accent2);
+}
+
+.ai-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--accent2);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-text {
+  font-family: 'Crimson Pro', serif;
+  font-size: 14px;
+  color: var(--ink-mid);
+  line-height: 1.65;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.typing-cursor {
+  display: inline-block;
+  width: 2px; height: 14px;
+  background: var(--accent2);
+  animation: blink 0.8s steps(1) infinite;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+@keyframes blink { 50% { opacity:0; } }
+
+.article-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.action-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: transparent;
+  border: 1px solid var(--rule);
+  color: var(--ink-mid);
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex; align-items: center; gap: 6px;
+}
+
+.action-btn:hover { border-color: var(--ink-mid); color: var(--ink); }
+.action-btn.summarized { border-color: var(--accent2); color: var(--accent2); }
+.action-btn:disabled { opacity: 0.35; pointer-events: none; }
+
+.read-more {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-dim);
+  text-decoration: none;
+  transition: color 0.15s;
+  margin-right: auto;
+}
+.read-more:hover { color: var(--accent); }
+
+.paywall-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-dim);
+  border: 1px solid var(--rule);
+  padding: 2px 6px;
+  opacity: 0.6;
+}
+
+/* Relevance */
+.rel-score {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--ink-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rel-dots {
+  display: flex; gap: 2px;
+}
+
+.rel-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--rule);
+}
+.rel-dot.filled { background: var(--gold); }
+
+/* Article right col */
+.article-right {
+  width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+  flex-shrink: 0;
+}
+
+.big-number {
+  font-family: 'Playfair Display', serif;
+  font-size: 42px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--bg2);
+  letter-spacing: -0.03em;
+  user-select: none;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  border-left: 1px solid var(--rule);
+  padding-left: 28px;
+  padding-top: 0;
+}
+
+.sidebar-widget {
+  margin-bottom: 32px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.sidebar-widget:last-child { border-bottom: none; }
+
+.widget-head {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--ink-dim);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Daily Briefing widget */
+.briefing-widget {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 18px;
+  margin-bottom: 28px;
+}
+
+.briefing-head {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgba(245,242,235,0.5);
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(245,242,235,0.15);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.briefing-head::before {
+  content: '★';
+  color: var(--gold);
+  font-size: 10px;
+}
+
+.briefing-body {
+  font-family: 'Crimson Pro', serif;
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(245,242,235,0.75);
+  font-weight: 300;
+  min-height: 80px;
+}
+
+.briefing-body p { margin-bottom: 10px; }
+.briefing-body p:last-child { margin-bottom: 0; }
+
+.briefing-placeholder {
+  font-style: italic;
+  color: rgba(245,242,235,0.35);
+  font-size: 13px;
+}
+
+.briefing-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(245,242,235,0.15);
+}
+
+.btn-briefing {
+  flex: 1;
+  background: var(--accent);
+  color: white;
+  border: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 9px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+
+.btn-briefing:hover { background: #a02e14; }
+.btn-briefing:disabled { opacity:0.4; pointer-events:none; }
+
+.btn-email {
+  flex: 1;
+  background: transparent;
+  color: rgba(245,242,235,0.6);
+  border: 1px solid rgba(245,242,235,0.2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 9px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+
+.btn-email:hover { border-color: rgba(245,242,235,0.5); color: rgba(245,242,235,0.85); }
+.btn-email:disabled { opacity: 0.4; pointer-events: none; }
+
+/* Sector stats */
+.sector-stat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.stat-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  width: 54px;
+  flex-shrink: 0;
+}
+
+.stat-bar {
+  flex: 1; height: 3px;
+  background: var(--bg2);
+}
+
+.stat-fill {
+  height: 100%;
+  transition: width 0.6s ease;
+}
+
+.stat-n {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-dim);
+  width: 18px;
+  text-align: right;
+}
+
+/* Sources */
+.source-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.source-row:last-child { border-bottom: none; }
+
+.source-n { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink); }
+.source-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mid); }
+.source-status-dot { width: 6px; height: 6px; border-radius: 50%; }
+.source-status-dot.on { background: var(--infra-c); }
+.source-status-dot.off { background: var(--rule); }
+
+/* Email modal */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,22,18,0.75);
+  z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.modal-overlay.open { opacity:1; pointer-events:all; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  padding: 40px 48px;
+  max-width: 620px;
+  width: 90%;
+  transform: translateY(20px);
+  transition: transform 0.3s ease;
+}
+
+.modal-overlay.open .modal { transform: translateY(0); }
+
+.modal-kicker {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--ink-dim);
+  margin-bottom: 8px;
+}
+
+.modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+.modal-title em { color: var(--accent); font-style: normal; }
+
+.modal-divider { height: 1px; background: var(--rule); margin: 20px 0; }
+
+.email-preview {
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  padding: 24px 28px;
+  margin-bottom: 20px;
+}
+
+.email-from {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-dim);
+  margin-bottom: 4px;
+}
+
+.email-subject {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.email-body-preview {
+  font-family: 'Crimson Pro', serif;
+  font-size: 14px;
+  color: var(--ink-mid);
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+.modal-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.modal-input {
+  flex: 1;
+  border: 1px solid var(--rule);
+  background: var(--bg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 10px 14px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.modal-input:focus { border-color: var(--ink); }
+
+.modal-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--ink-dim);
+  margin-top: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px; right: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  background: none; border: none;
+  cursor: pointer;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.modal { position: relative; }
+
+.success-msg {
+  display: none;
+  text-align: center;
+  padding: 20px;
+}
+
+.success-msg.show { display: block; }
+
+.success-msg h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+.success-msg p {
+  font-family: 'Crimson Pro', serif;
+  color: var(--ink-mid);
+  font-size: 15px;
+}
+
+/* Spinning icon */
+.spin { animation: spin 1.2s linear infinite; display:inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Skeleton */
+.skel { background: linear-gradient(90deg, var(--bg2) 25%, #e8e3d8 50%, var(--bg2) 75%); background-size: 400%; animation: shimmer 1.5s infinite; border-radius: 2px; }
+@keyframes shimmer { 0% { background-position:100% 0; } 100% { background-position:-100% 0; } }
+
+::-webkit-scrollbar { height: 3px; width: 3px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--rule); }
+
+@media (max-width: 960px) {
+  .page { grid-template-columns: 1fr; padding: 0 20px 40px; }
+  .sidebar { border-left: none; border-top: 2px solid var(--ink); padding-left: 0; padding-top: 28px; }
+  .hero-strip { grid-template-columns: 1fr; gap: 20px; }
+  .hero-story { border-right: none; border-bottom: 1px solid var(--rule); padding: 0 0 20px; }
+  .masthead { padding: 0 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Masthead -->
+<header class="masthead">
+  <div class="masthead-top">
+    <div class="pub-name">ALT<em>·</em>INTEL</div>
+    <div class="masthead-meta">
+      <span class="edition">Private Markets Intelligence</span>
+      <span class="date-line" id="current-date">Loading...</span>
+    </div>
+    <div class="masthead-actions">
+      <button class="btn-secondary" onclick="loadFeed()">
+        <svg id="refresh-ico" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
+        Refresh
+      </button>
+      <button class="btn-primary" onclick="openEmailModal()">
+        ✉ Subscribe Daily
+      </button>
+    </div>
+  </div>
+  <nav class="masthead-nav">
+    <button class="nav-item active" data-s="all" onclick="filter('all',this)">All Sectors</button>
+    <button class="nav-item" data-s="PE" onclick="filter('PE',this)">Private Equity</button>
+    <button class="nav-item" data-s="Credit" onclick="filter('Credit',this)">Private Credit</button>
+    <button class="nav-item" data-s="Infra" onclick="filter('Infra',this)">Infrastructure</button>
+    <button class="nav-item" data-s="RE" onclick="filter('RE',this)">Real Estate</button>
+    <button class="nav-item" data-s="Hedge" onclick="filter('Hedge',this)">Hedge Funds</button>
+    <button class="nav-item" data-s="Macro" onclick="filter('Macro',this)">Macro</button>
+  </nav>
+</header>
+
+<!-- Ticker -->
+<div class="ticker">
+  <div class="ticker-label">BREAKING</div>
+  <div class="ticker-track">
+    <div class="ticker-inner" id="ticker-inner">
+      <span class="ticker-item"><strong>KKR</strong> closes $20B flagship fund, surpassing $18B target</span>
+      <span class="ticker-item"><strong>FED</strong> officials signal caution on rate cuts — PE valuations under pressure</span>
+      <span class="ticker-item"><strong>BROOKFIELD</strong> acquires Australian energy assets for $4.5B</span>
+      <span class="ticker-item"><strong>APOLLO</strong> raises $15B for credit strategies fund</span>
+      <span class="ticker-item"><strong>BLACKSTONE</strong> reports 14% AUM growth in Q1 — real estate drag persists</span>
+      <span class="ticker-item"><strong>PRIVATE CREDIT</strong> spreads tighten 45bps YTD as institutional demand surges</span>
+      <span class="ticker-item"><strong>CARLYLE</strong> eyes €7.5B European healthcare buyout</span>
+      <span class="ticker-item"><strong>MULTI-STRATEGY</strong> hedge funds post best Q1 returns since 2020</span>
+      <!-- dup -->
+      <span class="ticker-item"><strong>KKR</strong> closes $20B flagship fund, surpassing $18B target</span>
+      <span class="ticker-item"><strong>FED</strong> officials signal caution on rate cuts — PE valuations under pressure</span>
+      <span class="ticker-item"><strong>BROOKFIELD</strong> acquires Australian energy assets for $4.5B</span>
+      <span class="ticker-item"><strong>APOLLO</strong> raises $15B for credit strategies fund</span>
+      <span class="ticker-item"><strong>BLACKSTONE</strong> reports 14% AUM growth in Q1 — real estate drag persists</span>
+      <span class="ticker-item"><strong>PRIVATE CREDIT</strong> spreads tighten 45bps YTD as institutional demand surges</span>
+      <span class="ticker-item"><strong>CARLYLE</strong> eyes €7.5B European healthcare buyout</span>
+      <span class="ticker-item"><strong>MULTI-STRATEGY</strong> hedge funds post best Q1 returns since 2020</span>
+    </div>
+  </div>
+</div>
+
+<!-- Page -->
+<div class="page">
+
+  <!-- Hero strip -->
+  <div class="hero-strip" id="hero-strip">
+    <!-- injected by JS -->
+  </div>
+
+  <!-- Feed -->
+  <div class="feed-section">
+    <div class="section-rule">
+      <h2>Latest Intelligence</h2>
+      <div class="rule-line"></div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-dim);white-space:nowrap;" id="feed-count">— 0 articles</span>
+    </div>
+    <div id="feed-container"></div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+
+    <!-- Daily Briefing -->
+    <div class="briefing-widget">
+      <div class="briefing-head">Morning Briefing — AI Generated</div>
+      <div class="briefing-body" id="briefing-body">
+        <span class="briefing-placeholder">Generate your personalized morning briefing from today's news flow.</span>
+      </div>
+      <div class="briefing-actions">
+        <button class="btn-briefing" id="gen-btn" onclick="generateBriefing()">⚡ Generate</button>
+        <button class="btn-email" id="email-brief-btn" onclick="openEmailModal()" disabled>✉ Email</button>
+      </div>
+    </div>
+
+    <!-- Sector breakdown -->
+    <div class="sidebar-widget">
+      <div class="widget-head">
+        <span>Sector Distribution</span>
+        <span id="total-articles" style="color:var(--ink)">0</span>
+      </div>
+      <div id="sector-stats"></div>
+    </div>
+
+    <!-- Sources -->
+    <div class="sidebar-widget">
+      <div class="widget-head">Data Sources</div>
+      <div id="sources-widget"></div>
+    </div>
+
+  </aside>
+</div>
+
+<!-- Email Modal -->
+<div class="modal-overlay" id="email-modal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeEmailModal()">✕ Close</button>
+    <div class="modal-kicker">Daily Briefing Delivery</div>
+    <div class="modal-title">Subscribe to <em>ALT·Intel</em></div>
+    <p style="font-family:'Crimson Pro',serif;font-size:15px;color:var(--ink-mid);line-height:1.65;margin-bottom:16px;">Receive a personalized AI-generated briefing on private markets news every morning at 7:00 AM.</p>
+    <div class="modal-divider"></div>
+
+    <div id="email-preview-section">
+      <!-- Email preview -->
+      <div class="email-preview">
+        <div class="email-from">From: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="90f2e2f9f5f6f9fef7d0f1fce4bdf9fee4f5fcbef3fffd">[email&#160;protected]</a> · To: you</div>
+        <div class="email-subject" id="email-subject-preview">ALT·Intel Morning Briefing — Thu, Feb 20, 2025</div>
+        <div class="email-body-preview" id="email-body-preview">
+          <em style="color:var(--ink-dim);font-size:13px;">Generate a briefing first to preview your email content...</em>
+        </div>
+      </div>
+
+      <div class="modal-form">
+        <input class="modal-input" type="email" id="email-input" placeholder="your@email.com" />
+        <button class="btn-primary" id="subscribe-btn" onclick="subscribe()">Subscribe</button>
+      </div>
+      <div class="modal-time">📅 Delivered daily at 07:00 AM · Unsubscribe anytime</div>
+    </div>
+
+    <div class="success-msg" id="success-msg">
+      <h3>You're subscribed.</h3>
+      <p>Your first briefing will arrive tomorrow morning at 7:00 AM.</p>
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ─────────────────────────────────────
+// DATA
+// ─────────────────────────────────────
+// ─────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────
+// ─────────────────────────────────────
+// RSS FEEDS — real articles, no backend needed
+// ─────────────────────────────────────
+const RSS_FEEDS = [
+  // ── Paywall — כותרות + לינק לאתר ─────────────────
+  { url: "https://www.privateequitywire.co.uk/feed/",                                  source: "PE Wire",        sector: "PE",     paywall: true  },
+  { url: "https://www.infrastructureinvestor.com/feed/",                               source: "Infra Investor", sector: "Infra",  paywall: true  },
+  { url: "https://www.perenews.com/feed/",                                             source: "PERE News",      sector: "RE",     paywall: true  },
+  { url: "https://www.buyoutsinsider.com/feed/",                                       source: "Buyouts Insider",sector: "PE",     paywall: true  },
+  { url: "https://www.privateequityinternational.com/feed/",                           source: "PEI",            sector: "PE",     paywall: true  },
+  { url: "https://feeds.content.dowjones.io/public/rss/RSSMarketsMain",               source: "WSJ Markets",    sector: "Macro",  paywall: true  },
+  { url: "https://feeds.content.dowjones.io/public/rss/WSJcomUSBusiness",             source: "WSJ Business",   sector: "PE",     paywall: true  },
+  { url: "https://www.ft.com/stream/ab70c42c-4d60-4851-89bb-16e2daeddfc1?format=rss", source: "FT Private Equity", sector: "PE",  paywall: true  },
+  { url: "https://www.fnlondon.com/rss",                                               source: "FN London",      sector: "Hedge",  paywall: true  },
+  { url: "https://unquote.com/feeds/rss",                                              source: "Unquote",        sector: "PE",     paywall: true  },
+
+  // ── פתוח — קריאה מלאה ─────────────────────────────
+  { url: "https://feeds.reuters.com/reuters/businessNews",                             source: "Reuters",        sector: "Macro",  paywall: false },
+  { url: "https://www.cnbc.com/id/10001147/device/rss/rss.html",                      source: "CNBC",           sector: "Macro",  paywall: false },
+  { url: "https://altassets.net/feed",                                                 source: "AltAssets",      sector: "PE",     paywall: false },
+  { url: "https://pitchbook.com/blog/rss.xml",                                         source: "PitchBook",      sector: "PE",     paywall: false },
+  { url: "https://corpgov.law.harvard.edu/feed/",                                      source: "Harvard Law",    sector: "PE",     paywall: false },
+  { url: "https://opalesque.com/rss.xml",                                              source: "Opalesque",      sector: "Hedge",  paywall: false },
+  { url: "https://news.google.com/rss/search?q=preqin+alternatives&hl=en-US&gl=US&ceid=US:en", source: "Preqin News", sector: "PE", paywall: false },
+  { url: "https://news.google.com/rss/search?q=pitchbook+private+equity+deal&hl=en-US&gl=US&ceid=US:en", source: "PitchBook News", sector: "PE", paywall: false },
+
+  // ── Curated Google News (captures Bloomberg/FT/Reuters/etc when alternatives-relevant) ──
+  { url: "https://news.google.com/rss/search?q=site%3Abloomberg.com+(%22private+equity%22+OR+%22private+credit%22+OR+secondaries+OR+%22continuation+fund%22+OR+%22NAV+loan%22+OR+fundraising)&hl=en-US&gl=US&ceid=US:en", source: "Google (Bloomberg)", sector: "Macro", paywall: true },
+  { url: "https://news.google.com/rss/search?q=site%3Aft.com+(%22private+equity%22+OR+%22private+credit%22+OR+secondaries+OR+%22continuation+fund%22+OR+fundraising)&hl=en-US&gl=US&ceid=US:en", source: "Google (FT)", sector: "Macro", paywall: true },
+  { url: "https://news.google.com/rss/search?q=site%3Areuters.com+(%22private+equity%22+OR+%22private+credit%22+OR+secondaries+OR+%22continuation+fund%22+OR+fundraising)&hl=en-US&gl=US&ceid=US:en", source: "Google (Reuters)", sector: "Macro", paywall: false },
+
+  // ── Research brands via Google News (when they publish / are cited) ──
+  { url: "https://news.google.com/rss/search?q=pitchbook+(private+equity+OR+private+credit+OR+secondaries+OR+fundraising)&hl=en-US&gl=US&ceid=US:en", source: "Google (PitchBook)", sector: "PE", paywall: false },
+  { url: "https://news.google.com/rss/search?q=preqin+(private+markets+OR+alternatives+OR+private+equity+OR+private+credit)&hl=en-US&gl=US&ceid=US:en", source: "Google (Preqin)", sector: "PE", paywall: false },
+  { url: "https://news.google.com/rss/search?q=%22Cambridge+Associates%22+(alternatives+OR+private+equity+OR+private+credit)&hl=en-US&gl=US&ceid=US:en", source: "Google (Cambridge)", sector: "Macro", paywall: false },
+  { url: "https://businesswire.com/rss/home/rss_homepage.rss",                        source: "Business Wire",  sector: "PE",     paywall: false },
+  { url: "https://www.theguardian.com/business/privateequity/rss",                    source: "The Guardian PE",sector: "PE",     paywall: false },
+];
+
+const RSS2JSON = "https://api.rss2json.com/v1/api.json?rss_url=";
+
+
+// Time window filter (last N days)
+const MAX_DAYS = 30;
+function isWithinTimeWindow(pubDate) {
+  if (!pubDate) return false;
+  const t = new Date(pubDate).getTime();
+  if (!isFinite(t)) return false;
+  const diff = Date.now() - t;
+  return diff <= MAX_DAYS * 24 * 60 * 60 * 1000;
+}
+
+// Keyword-based sector guesser
+const SECTOR_KEYWORDS = {
+  PE:     ["private equity","buyout","lbo","kkr","carlyle","blackstone","apollo","eqt","warburg","advent","bain capital"],
+  Credit: ["private credit","direct lending","credit fund","private debt","leveraged loan","ares","blue owl","golub"],
+  Infra:  ["infrastructure","infrastructure investor","infra fund","infrastructure fund","renewable","renewables","energy transition","solar","wind","battery","storage","grid","transmission","utility","utilities","digital infrastructure","data center","datacenter","fiber","fibre","tower","towers","airport","ports","port","toll road","rail","railway","pipeline","lng","terminal","brookfield","macquarie","ifm","global infrastructure partners","gip","kkr infrastructure","stonepeak"],
+  RE:     ["real estate","property","reit","repe","real estate private equity","commercial property","commercial real estate","cre","office","offices","logistics","warehouse","industrial","multifamily","residential","housing","student housing","senior housing","build-to-rent","btr","hotel","hospitality","self storage","self-storage","storage reit","data center real estate","life sciences real estate","blackstone real estate","brookfield real estate","kkr real estate"],
+  Hedge:  ["hedge fund","long/short","multi-strategy","macro fund","bridgewater","citadel","millennium"],
+  Macro:  ["interest rate","federal reserve","fed","inflation","gdp","central bank","ecb","monetary","pension","sovereign wealth"],
+};
+// ─────────────────────────────────────
+// ALT-ONLY FILTER (sector-aware, Infra/RE friendly)
+// ─────────────────────────────────────
+const FILTER_MODE = 'smart'; // 'off' | 'smart'
+
+const EXCLUDE_NOISE = [
+  "crypto","bitcoin","ethereum","meme stock","sports betting","celebrity","fashion",
+  "iphone","android","retail trading","day trading","earnings call"
+];
+
+// Broad but still "alts" oriented
+const ALT_CORE = [
+  "private markets","alternative investments","alternatives",
+  "private equity","buyout","lbo","gp","lp","limited partner","general partner",
+  "fundraising","first close","final close","hard cap","second close",
+  "private credit","direct lending","private debt","special situations",
+  "secondaries","secondary","gp-led","continuation fund",
+  "nav loan","nav facility","subscription line",
+  "infrastructure fund","real estate fund","repe","hedge fund"
+];
+
+// Relaxed dictionaries for Infra/RE so they don't get filtered out
+const INFRA_RELAX = [
+  "infrastructure","renewable","energy transition","solar","wind","battery","grid","utility",
+  "digital infrastructure","data center","datacenter","fiber","fibre","tower","airport","port","toll road","rail","pipeline","lng"
+];
+
+const RE_RELAX = [
+  "real estate","property","reit","commercial real estate","cre","logistics","warehouse",
+  "multifamily","housing","student housing","self storage","self-storage","hospitality","office"
+];
+
+// If the source is already a niche alts outlet, be lenient
+const TRUSTED_ALTS_SOURCES = [
+  "PE Wire","Infra Investor","Infrastructure Investor","PERE","PERE News","PEI","Unquote","Buyouts Insider",
+  "AltAssets","PitchBook","Opalesque","Harvard Law","Institutional Investor","Global SWF","Alternative Credit Investor"
+];
+
+function textHasAny(t, arr) {
+  return arr.some(k => t.includes(k));
+}
+
+function isAltRelevant(item) {
+  const t = ((item.title || "") + " " + (item.body || "")).toLowerCase();
+
+  // kill obvious noise early
+  if (textHasAny(t, EXCLUDE_NOISE)) return false;
+
+  const isTrusted = TRUSTED_ALTS_SOURCES.some(s => (item.source || "").toLowerCase().includes(s.toLowerCase()));
+
+  if (item.sector === "Infra") {
+    return isTrusted || textHasAny(t, INFRA_RELAX) || textHasAny(t, ALT_CORE);
+  }
+
+  if (item.sector === "RE") {
+    return isTrusted || textHasAny(t, RE_RELAX) || textHasAny(t, ALT_CORE);
+  }
+
+  // PE/Credit/Hedge/Macro: stricter
+  return isTrusted || textHasAny(t, ALT_CORE);
+}
+
+// Alt-markets allowlist filter (to keep feed strictly alternatives) 
+function guessSector(title, body, defaultSector) {
+  const text = (title + " " + body).toLowerCase();
+  let best = defaultSector, bestScore = 0;
+  for (const [sector, keywords] of Object.entries(SECTOR_KEYWORDS)) {
+    const score = keywords.filter(kw => text.includes(kw)).length;
+    if (score > bestScore) { bestScore = score; best = sector; }
+  }
+  return best;
+}
+
+function estimateRelevance(title, body) {
+  const text = (title + " " + body).toLowerCase();
+  const allKw = Object.values(SECTOR_KEYWORDS).flat();
+  return Math.min(55 + allKw.filter(kw => text.includes(kw)).length * 6, 98);
+}
+
+let currentFilter = 'all';
+let briefingText = '';
+let articles = [];
+let nextId = 1;
+
+
+// Auto-refresh (keeps analysts up to date without manual refresh)
+let AUTO_REFRESH_MS = 4 * 60 * 1000; // 4 minutes
+let autoTimer = null;
+
+function startAutoRefresh() {
+  stopAutoRefresh();
+  autoTimer = setInterval(() => loadArticles(currentFilter), AUTO_REFRESH_MS);
+}
+
+function stopAutoRefresh() {
+  if (autoTimer) clearInterval(autoTimer);
+  autoTimer = null;
+}
+
+// Pause refresh when tab is not visible (reduces quota / rate-limit risk)
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) stopAutoRefresh();
+  else startAutoRefresh();
+});
+
+
+// ─────────────────────────────────────
+// INIT
+// ─────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  const d = new Date();
+  document.getElementById('current-date').textContent =
+    d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('email-subject-preview').textContent =
+    `ALT·Intel Morning Briefing — ${d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' })}`;
+
+  await loadArticles();
+  startAutoRefresh();
+});
+
+// ─────────────────────────────────────
+// LOAD REAL RSS FEEDS
+// ─────────────────────────────────────
+async function fetchFeed(feed) {
+  try {
+    const res = await fetch(`${RSS2JSON}${encodeURIComponent(feed.url)}&count=10`);
+    const data = await res.json();
+    if (data.status !== 'ok' || !data.items) return [];
+    return data.items.map(item => ({
+      id: nextId++,
+      title: item.title || '',
+      body: (item.description || item.content || '').replace(/<[^>]+>/g, '').substring(0, 300),
+      url: item.link || '',
+      source: feed.source,
+      sector: guessSector(item.title || '', item.description || '', feed.sector),
+      rel: estimateRelevance(item.title || '', item.description || ''),
+      time: timeAgo(item.pubDate),
+      _pubDate: item.pubDate || null,
+      _pubDate: item.pubDate,
+      paywall: feed.paywall || false,
+      aiSummary: null,
+    }));
+  } catch(e) {
+    console.warn(`Feed failed: ${feed.source}`);
+    return [];
+  }
+}
+
+async function loadArticles(sector = null) {
+  // Show loading state
+  document.getElementById('feed-container').innerHTML =
+    `<div style="padding:40px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim)">Loading live feeds...</div>`;
+
+  nextId = 1;
+
+  // Fetch all feeds in parallel
+  const results = await Promise.all(RSS_FEEDS.map(fetchFeed));
+  let all = results.flat();
+
+  // Filter: last 30 days only
+  all = all.filter(a => isWithinTimeWindow(a._pubDate));
+
+  // Filter: alts-focused (but Infra/RE friendly)
+  if (typeof FILTER_MODE !== 'undefined' && FILTER_MODE === 'smart') {
+    all = all.filter(isAltRelevant);
+  }
+
+
+  // Filter to alternative-markets relevant items (sector-aware)
+  if (FILTER_MODE === 'smart') {
+    all = all.filter(isAltRelevant);
+  }
+
+  // Keep feed strictly alternatives (reduces macro noise)
+// Sort by recency (most recent first)
+  all.sort((a, b) => {
+    const da = new Date(a._pubDate || 0), db = new Date(b._pubDate || 0);
+    return db - da;
+  });
+
+  // Deduplicate by normalized title — prefer sources with full access (non-paywall)
+  const pickBetter = (a, b) => {
+    const aPay = !!a.paywall, bPay = !!b.paywall;
+
+    // 1) Prefer non-paywall (full story accessible)
+    if (aPay !== bPay) return aPay ? b : a;
+
+    // 2) Prefer direct publisher over aggregators (e.g., Google News), if access is the same
+    const aAgg = /google/i.test(a.source || '');
+    const bAgg = /google/i.test(b.source || '');
+    if (aAgg !== bAgg) return aAgg ? b : a;
+
+    // 3) Prefer higher relevance
+    const ar = Number(a.rel || 0), br = Number(b.rel || 0);
+    if (ar !== br) return ar > br ? a : b;
+
+    // 4) Prefer richer snippet/body
+    const al = (a.body || '').length, bl = (b.body || '').length;
+    if (al !== bl) return al > bl ? a : b;
+
+    return a;
+  };
+
+  const normalizeTitle = (t) => (t || '')
+    .toLowerCase()
+    .replace(/&amp;|&quot;|&#39;/g, ' ')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 80);
+
+  const bestByKey = new Map();
+  all.forEach(a => {
+    const key = normalizeTitle(a.title);
+    if (!key) return;
+    const prev = bestByKey.get(key);
+    bestByKey.set(key, prev ? pickBetter(prev, a) : a);
+  });
+
+  all = Array.from(bestByKey.values());
+
+  // Re-assign sequential IDs
+  all = all.map((a, i) => ({ ...a, id: i + 1 }));
+
+  if (all.length === 0) {
+    console.warn('All feeds failed — showing demo data');
+    articles = getDemoArticles();
+  } else {
+    articles = all;
+  }
+
+  currentFilter = sector || 'all';
+  renderHero();
+  renderFeed();
+  renderSidebar();
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return 'recently';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const h = Math.floor(diff / 3600000);
+  if (h < 1) return 'just now';
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h/24)}d ago`;
+}
+
+// ─────────────────────────────────────
+// HERO
+// ─────────────────────────────────────
+function renderHero() {
+  const top3 = articles.slice(0,3);
+  const colors = { PE:'var(--pe-c)', Credit:'var(--credit-c)', Infra:'var(--infra-c)', RE:'var(--re-c)', Hedge:'var(--hedge-c)', Macro:'var(--macro-c)' };
+  document.getElementById('hero-strip').innerHTML = top3.map(a => `
+    <a class="hero-story" href="${a.url || '#'}" target="_blank" style="cursor:pointer; text-decoration:none; color:inherit; display:block;">
+      <div class="hero-kicker" style="color:${colors[a.sector] || 'var(--ink-mid)'}">${a.sector} · ${a.source}</div>
+      <div class="hero-headline">${a.title}</div>
+      <div class="hero-deck">${(a.body||'').substring(0,120)}…</div>
+    </div>
+  `).join('');
+}
+
+// ─────────────────────────────────────
+// FEED
+// ─────────────────────────────────────
+function renderFeed() {
+  const list = currentFilter === 'all' ? articles : articles.filter(a => a.sector === currentFilter);
+  document.getElementById('feed-count').textContent = `— ${list.length} article${list.length !== 1 ? 's' : ''}`;
+
+  if (!list.length) {
+    document.getElementById('feed-container').innerHTML = `<div style="padding:40px 0; text-align:center; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink-dim)">No articles in this sector</div>`;
+    return;
+  }
+
+  document.getElementById('feed-container').innerHTML = list.map((a, i) => {
+    const rel = a.rel || 75;
+    const dots = Array(5).fill(0).map((_,d) => `<span class="rel-dot ${d < Math.round(rel/20) ? 'filled' : ''}"></span>`).join('');
+    const articleUrl = a.url || a.link || '#';
+    const isPaywall = a.paywall && (!a.url || a.url === '#');
+    return `
+    <a class="article" style="animation-delay:${i * 0.04}s; text-decoration:none; color:inherit; display:grid; grid-template-columns:1fr auto; gap:16px;" href="${articleUrl}" target="_blank">
+      <div class="article-left">
+        <div class="article-kicker">
+          <span class="sector-pill ${a.sector}">${a.sector}</span>
+          <span class="article-source">${a.source}</span>
+          <span class="article-time">${a.time}</span>
+        </div>
+        <div class="article-headline">${a.title}</div>
+        <div class="article-body">${a.body || ''}</div>
+        ${a.aiSummary ? `
+        <div class="ai-summary-wrap">
+          <div class="ai-label">✦ AI Analysis</div>
+          <div class="ai-text">${a.aiSummary}</div>
+        </div>
+        ` : ''}
+        <div class="article-actions">
+          ${a.paywall
+            ? '<span class="read-more" style="opacity:0.45; cursor:default;">🔒 Subscribers Only</span>'
+            : '<span class="read-more">Full Story →</span>'
+          }
+          <div class="rel-score"><div class="rel-dots">${dots}</div>${rel}%</div>
+          <button class="action-btn ${a.aiSummary ? 'summarized' : ''}"
+            onclick="event.preventDefault(); event.stopPropagation(); summarize(${a.id}, this);"
+            ${a.aiSummary ? 'disabled' : ''}>
+            ${a.aiSummary ? '✓ Analyzed' : '⚡ AI Analyze'}
+          </button>
+        </div>
+      </div>
+      <div class="article-right">
+        <span class="big-number">${String(i+1).padStart(2,'0')}</span>
+      </div>
+    </a>
+  `}).join('');
+}
+
+function filter(sector, btn) {
+  currentFilter = sector;
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFeed();
+  renderSidebar();
+}
+
+async function loadFeed() {
+  const ico = document.getElementById('refresh-ico');
+  ico.classList.add('spin');
+  await loadArticles();
+  ico.classList.remove('spin');
+}
+
+// ─────────────────────────────────────
+// SIDEBAR
+// ─────────────────────────────────────
+function renderSidebar() {
+  const sectors = ['PE','Credit','Infra','RE','Hedge','Macro'];
+  const c = { PE:'var(--pe-c)', Credit:'var(--credit-c)', Infra:'var(--infra-c)', RE:'var(--re-c)', Hedge:'var(--hedge-c)', Macro:'var(--macro-c)' };
+  const counts = {};
+  sectors.forEach(s => counts[s] = articles.filter(a => a.sector === s).length);
+  const max = Math.max(...Object.values(counts), 1);
+  document.getElementById('total-articles').textContent = articles.length;
+
+  document.getElementById('sector-stats').innerHTML = sectors.map(s => `
+    <div class="sector-stat">
+      <span class="stat-name" style="color:${c[s]}">${s}</span>
+      <div class="stat-bar"><div class="stat-fill" style="width:${counts[s]/max*100}%; background:${c[s]}"></div></div>
+      <span class="stat-n">${counts[s]}</span>
+    </div>
+  `).join('');
+
+  // Group articles by source for sidebar
+  const sourceCounts = {};
+  articles.forEach(a => { sourceCounts[a.source] = (sourceCounts[a.source] || 0) + 1; });
+  const sources = Object.entries(sourceCounts).sort((x,y) => y[1]-x[1]).slice(0,8);
+
+  document.getElementById('sources-widget').innerHTML = (sources.length ? sources : FALLBACK_SOURCES.map(s => [s.name, s.count])).map(([name, count]) => `
+    <div class="source-row">
+      <span class="source-n">${count}</span>
+      <span class="source-label">${name}</span>
+      <span class="source-status-dot ${count > 0 ? 'on' : 'off'}"></span>
+    </div>
+  `).join('');
+}
+
+// ─────────────────────────────────────
+// AI: SINGLE ARTICLE — via backend
+// ─────────────────────────────────────
+async function summarize(id, btn) {
+  const art = articles.find(a => a.id === id);
+  if (!art) return;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin">◌</span>';
+
+  const prompt = `You are a senior private markets analyst. Analyze this news in 2 sentences for institutional LPs: (1) market implication, (2) what to watch. Be direct, no filler.
+
+Headline: "${art.title}"
+Details: "${art.body}"`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    art.aiSummary = (data.content || []).map(c => c.text || '').join('');
+    renderFeed();
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '⚡ AI Analyze';
+  }
+}
+
+// ─────────────────────────────────────
+// AI: DAILY BRIEFING — via backend
+// ─────────────────────────────────────
+async function generateBriefing() {
+  const btn = document.getElementById('gen-btn');
+  const bodyEl = document.getElementById('briefing-body');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin">◌</span> Generating...';
+  bodyEl.innerHTML = '<span class="typing-cursor"></span>';
+
+  const headlines = articles.slice(0, 12).map(a => `[${a.sector}] ${a.title}: ${a.body}`).join('\n\n');
+
+  const prompt = `You are a senior private markets analyst. Write a Morning Briefing for institutional investors in 4 short paragraphs: (1) macro/rates context, (2) PE and credit highlights, (3) infrastructure and real assets, (4) one LP action item for this week. Flowing prose, no bullets, 180-220 words total.
+
+Today's news:
+${headlines}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    briefingText = (data.content || []).map(c => c.text || '').join('');
+    const paras = briefingText.split('\n\n').filter(p => p.trim());
+    bodyEl.innerHTML = paras.map(p => `<p>${p}</p>`).join('');
+
+    document.getElementById('email-body-preview').innerHTML =
+      paras.slice(0,2).map(p => `<p style="margin-bottom:10px;font-size:14px">${p}</p>`).join('') +
+      '<p style="color:var(--ink-dim);font-style:italic;font-size:13px">...continue reading in your inbox →</p>';
+
+    btn.innerHTML = '↻ Regenerate';
+    btn.disabled = false;
+    document.getElementById('email-brief-btn').disabled = false;
+  } catch(e) {
+    bodyEl.innerHTML = '<span style="color:#c4381a;font-size:13px">Error: ' + e.message + '</span>';
+    btn.innerHTML = '⚡ Generate';
+    btn.disabled = false;
+  }
+}
+
+// ─────────────────────────────────────
+// EMAIL MODAL
+// ─────────────────────────────────────
+function openEmailModal() {
+  document.getElementById('email-modal').classList.add('open');
+}
+
+function closeEmailModal() {
+  document.getElementById('email-modal').classList.remove('open');
+  document.getElementById('success-msg').classList.remove('show');
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('email-modal')) closeEmailModal();
+}
+
+async function subscribe() {
+  const email = document.getElementById('email-input').value.trim();
+  if (!email || !email.includes('@')) {
+    document.getElementById('email-input').style.borderColor = 'var(--accent)';
+    return;
+  }
+  const btn = document.getElementById('subscribe-btn');
+  btn.disabled = true; btn.textContent = '...';
+
+  try {
+    const res = await fetch(`${API_BASE}/subscribe`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('email-preview-section').style.display = 'none';
+      document.getElementById('success-msg').classList.add('show');
+    } else {
+      btn.disabled = false; btn.textContent = 'Subscribe';
+    }
+  } catch(e) {
+    // Offline fallback
+    document.getElementById('email-preview-section').style.display = 'none';
+    document.getElementById('success-msg').classList.add('show');
+  }
+}
+
+function openArticle(a) {
+  const url = a.url || a.link;
+  if (url && url !== '#') {
+    window.open(url, '_blank');
+  }
+}
+
+function getDemoArticles() {
+  return [
+    { id:1, sector:"PE", source:"Private Equity Wire", title:"Permira and Warburg Pincus Sell Evelyn Partners to NatWest for £2.7bn", body:"Permira and Warburg Pincus agreed to sell UK wealth manager Evelyn Partners to NatWest Group for £2.7bn, marking a major consolidation in UK private banking and a significant liquidity event for both PE firms.", time:"2h ago", rel:95, aiSummary:null, url:"https://www.privateequitywire.co.uk/news/" },
+    { id:2, sector:"PE", source:"Private Equity Wire", title:"Thoma Bravo Eyes Software Market Downturn Dubbed the SaaSpocalypse", body:"Tech-focused buyout firm Thoma Bravo is looking to capitalise on the ongoing software market downturn, as a disconnect between high-quality firms and riskier software providers creates selective entry points for disciplined PE buyers.", time:"4h ago", rel:91, aiSummary:null, url:"https://www.privateequitywire.co.uk/news/" },
+    { id:3, sector:"Hedge", source:"Private Equity Wire", title:"Blackstone Expands Anthropic Stake to Around $1bn at $350bn Valuation", body:"Blackstone has expanded its investment in AI startup Anthropic, bringing its total stake to around $1bn at the current $350bn valuation, signalling continued institutional appetite for AI infrastructure exposure.", time:"5h ago", rel:88, aiSummary:null, url:"https://www.privateequitywire.co.uk/news/" },
+    { id:4, sector:"Credit", source:"Private Equity Wire", title:"Apollo Posts 13% Rise in Q4 Profit on Record Debt Origination", body:"Apollo Global Management posted a 13% rise in fourth-quarter profit, surpassing Wall Street estimates, driven by record debt origination and strong inflows from clients seeking private credit alternatives.", time:"7h ago", rel:87, aiSummary:null, url:"https://www.privateequitywire.co.uk/news/" },
+    { id:5, sector:"RE", source:"Private Equity Wire", title:"Brookfield and GIC Propose AUD4bn Take-Private of National Storage REIT", body:"National Storage REIT received a AUD4.02bn buyout proposal from a consortium led by Brookfield and GIC, marking what would be Australia largest real-estate take-private deal.", time:"9h ago", rel:84, aiSummary:null, url:"https://www.privateequitywire.co.uk/news/" },
+  ];
+}</script>
+</body>
+</html>
