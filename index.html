@@ -483,26 +483,6 @@ body::before {
   opacity: 0.6;
 }
 
-/* Relevance */
-.rel-score {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  color: var(--ink-dim);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.rel-dots {
-  display: flex; gap: 2px;
-}
-
-.rel-dot {
-  width: 5px; height: 5px; border-radius: 50%;
-  background: var(--rule);
-}
-.rel-dot.filled { background: var(--gold); }
-
 /* Article right col */
 .article-right {
   width: 80px;
@@ -1013,8 +993,11 @@ const QUALITY_THRESHOLD_LIVE = 60;
 const LIVE_MAX_ITEMS = 12;
 const DAILY_BRIEF_MAX_ITEMS = 8;
 
-const HIGH_SIGNAL_RE = /(first close|final close|hard cap|fundraise|raised|closing|close[d]? on|take-?private|lbo|acquir|sale|divest|ipo|continuation|gp-led|secondaries|nav (loan|facility)|subscription line|refinanc|redemption|gate|liquidity|distress|default|restructur|leverage|unitranche|direct lending|private credit|aum|ir{2}|tvpi|dpi|valuation|multiple)/i;
-const LOW_SIGNAL_RE  = /(podcast|sponsored|advertis|webinar|catch up|opinion|substack|newsletter only)/i;
+// Expanded the signal logic to capture more critical Private Markets terms
+const HIGH_SIGNAL_RE = /(first close|final close|hard cap|fundraise|raised|closing|close[d]? on|take-?private|lbo|acquir|sale|divest|ipo|continuation|gp-led|secondaries|nav (loan|facility)|subscription line|refinanc|redemption|gate|liquidity|distress|default|restructur|leverage|unitranche|direct lending|private credit|aum|ir{2}|tvpi|dpi|valuation|multiple|dry powder|co-investment|commitment|lp|general partner)/i;
+// Stricter noise filter
+const LOW_SIGNAL_RE  = /(podcast|sponsored|advertis|webinar|catch up|opinion|substack|newsletter only|roundup|briefing|morning note)/i;
+
 const TIER1 = ['Financial Times','FT','Reuters','Bloomberg','PEI','Private Equity International','Secondaries Investor','Infra Investor','PE Wire'];
 const TIER2 = ['Institutional Investor','Unquote','AltAssets','WSJ','Wall Street Journal','The Economist','Fortune'];
 
@@ -1037,9 +1020,11 @@ function qualityScore(a) {
   else score += 12;
 
   if (HIGH_SIGNAL_RE.test(text)) score += 30;
-  if (LOW_SIGNAL_RE.test(text)) score -= 20;
-  if (a.sector === 'PE' || a.sector === 'Credit') score += 5;
-  if (a.time.includes('h ago') || a.time.includes('just now')) score += 8;
+  if (LOW_SIGNAL_RE.test(text)) score -= 30; // Increased penalty for noise
+  
+  // Slight bump for core alternatives sectors over pure macro
+  if (a.sector === 'PE' || a.sector === 'Credit' || a.sector === 'Infra') score += 5;
+  if (a.time.includes('h ago') || a.time.includes('just now')) score += 10;
 
   return Math.max(0, Math.min(100, score));
 }
@@ -1142,7 +1127,7 @@ async function loadArticles() {
     return true;
   });
 
-  // Sort by date desc
+  // Sort by date desc initially
   all.sort((a,b) => b._ts - a._ts);
 
   if (all.length === 0) {
@@ -1161,7 +1146,9 @@ async function loadArticles() {
 }
 
 function renderHero() {
-  const top3 = articles.slice(0,3);
+  // Sort by qscore (quality) descending, take the top 3
+  const top3 = [...articles].sort((a, b) => (b.qscore || 0) - (a.qscore || 0)).slice(0, 3);
+  
   const colors = { PE:'var(--pe-c)', Credit:'var(--credit-c)', Infra:'var(--infra-c)', RE:'var(--re-c)', Hedge:'var(--hedge-c)', Macro:'var(--macro-c)' };
   const hero = document.getElementById('hero-strip');
   if(!hero) return;
