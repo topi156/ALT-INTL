@@ -983,23 +983,27 @@ const RSS_FEEDS = [
   { url: "https://pitchbook.com/blog/rss.xml",                                         source: "PitchBook",      sector: "PE",     paywall: false },
   { url: "https://corpgov.law.harvard.edu/feed/",                                      source: "Harvard Law",    sector: "PE",     paywall: false },
   { url: "https://opalesque.com/rss.xml",                                              source: "Opalesque",      sector: "Hedge",  paywall: false },
-  { url: "https://businesswire.com/rss/home/rss_homepage.rss",                        source: "Business Wire",  sector: "PE",     paywall: false },
-  { url: "https://www.theguardian.com/business/privateequity/rss",                    source: "The Guardian PE",sector: "PE",     paywall: false },
+  
+  // ── High Volume (Google News Curated) ─────────────────────────────
+  { url: "https://news.google.com/rss/search?q=site%3Abloomberg.com+(%22private+equity%22+OR+%22private+credit%22+OR+secondaries+OR+%22continuation+fund%22+OR+%22NAV+loan%22+OR+fundraising)&hl=en-US&gl=US&ceid=US:en", source: "Google (Bloomberg)", sector: "PE", paywall: true },
+  { url: "https://news.google.com/rss/search?q=site%3Aft.com+(%22private+equity%22+OR+%22private+credit%22+OR+secondaries+OR+%22continuation+fund%22+OR+fundraising)&hl=en-US&gl=US&ceid=US:en", source: "Google (FT)", sector: "PE", paywall: true },
+  { url: "https://news.google.com/rss/search?q=site%3Areuters.com+(%22private+equity%22+OR+%22private+credit%22+OR+secondaries+OR+%22continuation+fund%22+OR+fundraising)&hl=en-US&gl=US&ceid=US:en", source: "Google (Reuters)", sector: "PE", paywall: false },
+  { url: "https://news.google.com/rss/search?q=pitchbook+(private+equity+OR+private+credit+OR+secondaries+OR+fundraising)&hl=en-US&gl=US&ceid=US:en", source: "Google (PitchBook)", sector: "PE", paywall: false },
+  { url: "https://news.google.com/rss/search?q=preqin+(private+markets+OR+alternatives+OR+private+equity+OR+private+credit)&hl=en-US&gl=US&ceid=US:en", source: "Google (Preqin)", sector: "PE", paywall: false },
+  { url: "https://news.google.com/rss/search?q=%22commercial+real+estate%22+OR+REIT+OR+%22logistics+fund%22+when:1d&hl=en-US&gl=US&ceid=US:en", source: "Google (Real Estate)", sector: "RE", paywall: false },
+  { url: "https://news.google.com/rss/search?q=%22infrastructure+fund%22+OR+%22energy+transition%22+OR+%22digital+infrastructure%22+when:1d&hl=en-US&gl=US&ceid=US:en", source: "Google (Infra)", sector: "Infra", paywall: false }
 ];
 
 const PROXY_URL = "https://api.rss2json.com/v1/api.json?rss_url=";
-const MAX_DAYS = 30;
 const QUALITY_THRESHOLD_LIVE = 60;
 const LIVE_MAX_ITEMS = 12;
 const DAILY_BRIEF_MAX_ITEMS = 8;
 
-// Expanded the signal logic to capture more critical Private Markets terms
 const HIGH_SIGNAL_RE = /(first close|final close|hard cap|fundraise|raised|closing|close[d]? on|take-?private|lbo|acquir|sale|divest|ipo|continuation|gp-led|secondaries|nav (loan|facility)|subscription line|refinanc|redemption|gate|liquidity|distress|default|restructur|leverage|unitranche|direct lending|private credit|aum|ir{2}|tvpi|dpi|valuation|multiple|dry powder|co-investment|commitment|lp|general partner)/i;
-// Stricter noise filter
 const LOW_SIGNAL_RE  = /(podcast|sponsored|advertis|webinar|catch up|opinion|substack|newsletter only|roundup|briefing|morning note)/i;
 
 const TIER1 = ['Financial Times','FT','Reuters','Bloomberg','PEI','Private Equity International','Secondaries Investor','Infra Investor','PE Wire'];
-const TIER2 = ['Institutional Investor','Unquote','AltAssets','WSJ','Wall Street Journal','The Economist','Fortune'];
+const TIER2 = ['Institutional Investor','Unquote','AltAssets','WSJ','Wall Street Journal','The Economist','Fortune','Google'];
 
 function classifyTheme(a) {
   const t = ((a.title||'') + ' ' + (a.body||'')).toLowerCase();
@@ -1020,9 +1024,8 @@ function qualityScore(a) {
   else score += 12;
 
   if (HIGH_SIGNAL_RE.test(text)) score += 30;
-  if (LOW_SIGNAL_RE.test(text)) score -= 30; // Increased penalty for noise
+  if (LOW_SIGNAL_RE.test(text)) score -= 30;
   
-  // Slight bump for core alternatives sectors over pure macro
   if (a.sector === 'PE' || a.sector === 'Credit' || a.sector === 'Infra') score += 5;
   if (a.time.includes('h ago') || a.time.includes('just now')) score += 10;
 
@@ -1031,7 +1034,7 @@ function qualityScore(a) {
 
 function timeAgo(dateStr) {
   if (!dateStr) return 'recently';
-  const t = new Date(dateStr.replace(/-/g, '/')).getTime(); // fix for safari sometimes
+  const t = new Date(dateStr.replace(/-/g, '/')).getTime();
   if (isNaN(t)) return 'recently';
   const diff = Date.now() - t;
   const h = Math.floor(diff / 3600000);
@@ -1063,14 +1066,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await loadArticles();
   
-  // Auto refresh every 5 min
-  autoTimer = setInterval(loadArticles, 5 * 60 * 1000);
+  // Auto refresh changed to 10 min to protect API limits
+  autoTimer = setInterval(loadArticles, 10 * 60 * 1000);
 });
 
 async function fetchFeed(feed) {
-  // Uses rss2json to bypass CORS on GitHub Pages
   try {
-    const res = await fetch(PROXY_URL + encodeURIComponent(feed.url));
+    // Added a random parameter to help bust the cache when possible
+    const nocache = Math.floor(Math.random() * 10000);
+    const proxyTarget = PROXY_URL + encodeURIComponent(feed.url) + `&t=${nocache}`;
+    const res = await fetch(proxyTarget);
     const data = await res.json();
     
     if (data.status !== 'ok') {
@@ -1080,11 +1085,9 @@ async function fetchFeed(feed) {
 
     return data.items.map(item => {
       const title = item.title;
-      const body = item.description.replace(/<[^>]*>/g, ' ').substring(0, 300); // strip tags
+      const body = item.description.replace(/<[^>]*>/g, ' ').substring(0, 300);
       const sec = guessSector(title, body, feed.sector);
-      const q = { 
-        title, body, sector: sec, source: feed.source, time: item.pubDate 
-      };
+      const q = { title, body, sector: sec, source: feed.source, time: item.pubDate };
 
       return {
         id: nextId++,
@@ -1096,7 +1099,7 @@ async function fetchFeed(feed) {
         paywall: feed.paywall,
         time: timeAgo(item.pubDate),
         _ts: new Date(item.pubDate).getTime(),
-        rel: 70, // placeholder
+        rel: 70, 
         qscore: qualityScore(q),
         theme: classifyTheme(q)
       };
@@ -1131,7 +1134,7 @@ async function loadArticles() {
   all.sort((a,b) => b._ts - a._ts);
 
   if (all.length === 0) {
-    articles = getDemoArticles(); // Fallback if API limit reached
+    articles = getDemoArticles(); 
   } else {
     articles = all;
   }
@@ -1183,8 +1186,6 @@ function renderFeed() {
   }
 
   document.getElementById('feed-container').innerHTML = list.map((a, i) => {
-    // Generate simple alt take text
-    const take = `ALT TAKE: ${a.sector} deal flow remains active.`;
     return `
     <a class="article" style="animation-delay:${i * 0.05}s; text-decoration:none; color:inherit;" href="${a.url}" target="_blank">
       <div class="article-left">
