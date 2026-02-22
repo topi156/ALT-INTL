@@ -1177,13 +1177,15 @@ function qualityScore(a) {
   const body = (a.body || '').toLowerCase();
   const fullText = title + " " + body;
   
-  let score = 20; // ציון בסיס גבוה יותר
+  // ציון בסיס
+  let score = 25; 
 
-  // 1. בונוס מקורות (שמירה על הקיים)
+  // 1. בונוס מקורות משמעותי (Tier 1 מקבלים דחיפה חזקה)
   if (TIER1.some(x => a.source.includes(x))) score += 20;
   else if (TIER2.some(x => a.source.includes(x))) score += 10;
 
-  // 2. הבונוס שביקשת: גיוסי קרנות ואירועים ישירים (עלינו מ-25 ל-45!)
+  // 2. הבונוס המרכזי: גיוסי קרנות, סגירות ואירועי GP/LP
+  // מילות מפתח שנוגעות ישירות ל"ביזנס" של הניהול
   const fundEventKeywords = [
     "fundraise", "fundraising", "raised", "raising", "closes", "closed", 
     "first close", "final close", "hard cap", "target", "launches fund", 
@@ -1192,23 +1194,22 @@ function qualityScore(a) {
   ];
 
   if (fundEventKeywords.some(kw => fullText.includes(kw))) {
-    score += 45; // זה מבטיח שהן יעברו את ה-70-80 בקלות
+    score += 45; // בונוס דרמטי להבטחת מקום ב-Hero
   }
 
-  // 3. בונוס סקטורים ליבה (PE/Credit/Infra)
-  if (['PE', 'Credit', 'Infra'].includes(a.sector)) score += 10;
-
-  // 4. בונוס כותרת - אם מילות המפתח מופיעות בכותרת ולא רק בטקסט, עוד בונוס
+  // 3. בונוס כותרת: אם מילת המפתח היא בכותרת, זה כנראה הסיפור המרכזי
   if (fundEventKeywords.some(kw => title.includes(kw))) {
     score += 15;
   }
 
-  // 5. עונש (Penalty) לידיעות כלליות מדי או "רכות" (כמו הידיעה על Mattel או השעונים)
-  const generalKeywords = ["luxury", "watchmaker", "dolls", "retail", "consumer", "lifestyle"];
-  if (generalKeywords.some(kw => fullText.includes(kw))) {
-    score -= 20;
+  // 4. עונש (Penalty) לכתבות "לייף סטייל" או מותגי צריכה שזולגות לסקטור
+  // זה יוריד את הציונים של כתבות כמו אלו שרואים בתמונה (Breitling, Mattel, Hasbro)
+  const consumerKeywords = ["watchmaker", "dolls", "toy", "lifestyle", "luxury brand", "retailer", "hasbro", "mattel"];
+  if (consumerKeywords.some(kw => fullText.includes(kw))) {
+    score -= 30;
   }
 
+  // הגבלה לטווח 0-100
   return Math.max(0, Math.min(100, score));
 }
 
