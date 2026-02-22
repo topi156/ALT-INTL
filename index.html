@@ -1266,7 +1266,7 @@ async function fetchFeed(feed) {
   try {
     const res = await Promise.race([
       fetch(`${RSS2JSON}${enc}&count=20`),
-      new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 7000))
+      new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 15000))
     ]);
     const data = await res.json();
     if (data.status === 'ok' && data.items?.length) {
@@ -1279,7 +1279,7 @@ async function fetchFeed(feed) {
   try {
     const res = await Promise.race([
       fetch(`https://corsproxy.io/?${enc}`),
-      new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 8000))
+      new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 15000))
     ]);
     const xml = await res.text();
     const doc = new DOMParser().parseFromString(xml, 'text/xml');
