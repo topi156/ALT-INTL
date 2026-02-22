@@ -1173,34 +1173,42 @@ function guessSector(title, body, defaultSector) {
 }
 
 function qualityScore(a) {
-  const text = ((a.title||'') + ' ' + (a.body||'')).toLowerCase();
-  let score = 10;
+  const title = (a.title || '').toLowerCase();
+  const body = (a.body || '').toLowerCase();
+  const fullText = title + " " + body;
+  
+  let score = 20; // ציון בסיס גבוה יותר
 
-  // 1. בונוס לפי איכות המקור (Tiering)
-  if (TIER1.some(x => a.source.includes(x))) score += 30;
-  else if (TIER2.some(x => a.source.includes(x))) score += 20;
-  else score += 12;
+  // 1. בונוס מקורות (שמירה על הקיים)
+  if (TIER1.some(x => a.source.includes(x))) score += 20;
+  else if (TIER2.some(x => a.source.includes(x))) score += 10;
 
-  // 2. בונוס "גיוס קרנות ואירועי GP" (הבקשה שלך)
-  // מחפש ביטויים כמו: גיוס, סגירה, יעד, קרן חדשה, וכדומה
+  // 2. הבונוס שביקשת: גיוסי קרנות ואירועים ישירים (עלינו מ-25 ל-45!)
   const fundEventKeywords = [
     "fundraise", "fundraising", "raised", "raising", "closes", "closed", 
     "first close", "final close", "hard cap", "target", "launches fund", 
     "new fund", "vintage", "capital commitment", "gp-led", "continuation fund",
-    "dry powder", "lp", "limited partner", "commitment"
+    "dry powder", "lp", "limited partner", "commitment", "secures $", "reaches $"
   ];
 
-  if (fundEventKeywords.some(kw => text.includes(kw))) {
-    score += 25; // תוספת משמעותית שתקפיץ את הידיעה לראש הפיד או ל-Hero
+  if (fundEventKeywords.some(kw => fullText.includes(kw))) {
+    score += 45; // זה מבטיח שהן יעברו את ה-70-80 בקלות
   }
 
-  // 3. בונוס לפי סקטורים מועדפים
-  if (a.sector === 'PE' || a.sector === 'Credit' || a.sector === 'Infra') score += 5;
+  // 3. בונוס סקטורים ליבה (PE/Credit/Infra)
+  if (['PE', 'Credit', 'Infra'].includes(a.sector)) score += 10;
 
-  // 4. בונוס על טריות (Recency)
-  if (a.time.includes('h ago') || a.time.includes('just now')) score += 10;
+  // 4. בונוס כותרת - אם מילות המפתח מופיעות בכותרת ולא רק בטקסט, עוד בונוס
+  if (fundEventKeywords.some(kw => title.includes(kw))) {
+    score += 15;
+  }
 
-  // הגבלה לטווח של 0-100
+  // 5. עונש (Penalty) לידיעות כלליות מדי או "רכות" (כמו הידיעה על Mattel או השעונים)
+  const generalKeywords = ["luxury", "watchmaker", "dolls", "retail", "consumer", "lifestyle"];
+  if (generalKeywords.some(kw => fullText.includes(kw))) {
+    score -= 20;
+  }
+
   return Math.max(0, Math.min(100, score));
 }
 
