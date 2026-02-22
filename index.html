@@ -1266,7 +1266,7 @@ async function fetchFeed(feed) {
 
   // ניסיון ראשון: AllOrigins (פרוקסי חזק יותר)
   try {
-    const res = await fetch(`https://api.allorigins.win/get?url=${enc}${cacheBuster}`);
+    const res = await fetch(`https://api.allorigins.win/get?url=${enc}${encodeURIComponent(cacheBuster)}`);
     const data = await res.json();
     // AllOrigins מחזיר את ה-XML כטקסט בתוך שדה contents
     const xml = data.contents;
