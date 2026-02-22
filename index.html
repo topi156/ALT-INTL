@@ -1238,6 +1238,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ─────────────────────────────────────
 async function fetchFeed(feed) {
   const enc = encodeURIComponent(feed.url);
+  // הוספת מספר אקראי כדי למנוע מהפרוקסי להחזיר תוצאה חסומה מהזיכרון
+  const cacheBuster = `&cb=${Math.random()}`;
 
   const mapItems = (items, urlField) => items.map(item => {
     const title = item.title || '';
@@ -1262,49 +1264,34 @@ async function fetchFeed(feed) {
     };
   });
 
-  // ── Proxy 1: rss2json (fast, cached) ──────────────
+  // ניסיון ראשון: AllOrigins (פרוקסי חזק יותר)
   try {
-    const res = await Promise.race([
-      fetch(`${RSS2JSON}${enc}&count=20`),
-      new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 15000))
-    ]);
+    const res = await fetch(`https://api.allorigins.win/get?url=${enc}${cacheBuster}`);
+    const data = await res.json();
+    // AllOrigins מחזיר את ה-XML כטקסט בתוך שדה contents
+    const xml = data.contents;
+    const doc = new DOMParser().parseFromString(xml, 'text/xml');
+    const els = Array.from(doc.querySelectorAll('item, entry'));
+    if (els.length) {
+      const items = els.map(el => ({
+        title: el.querySelector('title')?.textContent?.trim() || '',
+        link: el.querySelector('link')?.getAttribute('href') || el.querySelector('link')?.textContent?.trim() || '',
+        description: (el.querySelector('description')?.textContent || el.querySelector('summary')?.textContent || '').trim(),
+        pubDate: (el.querySelector('pubDate')?.textContent || el.querySelector('updated')?.textContent || '').trim(),
+      }));
+      return mapItems(items, 'link');
+    }
+  } catch(e) { console.warn(`AllOrigins failed for ${feed.source}`); }
+
+  // ניסיון שני: RSS2JSON (הגיבוי שלך)
+  try {
+    const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${enc}${cacheBuster}`);
     const data = await res.json();
     if (data.status === 'ok' && data.items?.length) {
-      console.log(`✓ ${feed.source}: ${data.items.length} [rss2json]`);
       return mapItems(data.items, 'link');
     }
-  } catch(e) { /* fall through */ }
+  } catch(e) { }
 
-  // ── Proxy 2: corsproxy.io (works from GitHub Pages, handles FT/CNBC/Bloomberg) ──
-  try {
-    const res = await Promise.race([
-      fetch(`https://corsproxy.io/?${enc}`),
-      new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 15000))
-    ]);
-    const xml = await res.text();
-    const doc = new DOMParser().parseFromString(xml, 'text/xml');
-    if (!doc.querySelector('parsererror')) {
-      const els = Array.from(doc.querySelectorAll('item, entry'));
-      if (els.length) {
-        const items = els.map(el => {
-          const linkEl = el.querySelector('link');
-          const link = linkEl?.getAttribute('href') || linkEl?.textContent?.trim() || el.querySelector('guid')?.textContent?.trim() || '';
-          return {
-            title:       el.querySelector('title')?.textContent?.trim() || '',
-            link,
-            description: (el.querySelector('description')?.textContent || el.querySelector('summary')?.textContent || '').trim(),
-            pubDate:     (el.querySelector('pubDate')?.textContent || el.querySelector('updated')?.textContent || '').trim(),
-          };
-        }).filter(x => x.title && x.link);
-        if (items.length) {
-          console.log(`✓ ${feed.source}: ${items.length} [corsproxy]`);
-          return mapItems(items, 'link');
-        }
-      }
-    }
-  } catch(e) { /* fall through */ }
-
-  console.warn(`✗ Feed failed: ${feed.source}`);
   return [];
 }
 
