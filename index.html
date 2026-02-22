@@ -1437,15 +1437,14 @@ function whyItMatters(a) {
 
 function renderFeed() {
   const list = currentFilter === 'all' ? articles : articles.filter(a => a.sector === currentFilter);
-  document.getElementById('feed-count').textContent = `— ${list.length} article${list.length !== 1 ? 's' : ''}`;
-
-  if (!list.length) {
-    document.getElementById('feed-container').innerHTML = `<div style="padding:40px 0; text-align:center; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink-dim)">No articles in this sector</div>`;
-    return;
-  }
+  // ... (שאר הקוד)
 
   document.getElementById('feed-container').innerHTML = list.map((a, i) => {
+    // הוסף את השורה הזו כאן כדי לעדכן את הציון לפי הלוגיקה החדשה:
+    a.qscore = qualityScore(a); 
+    
     const rel = a.rel || 75;
+    // ... המשך הרינדור הקיים
     const dots = Array(5).fill(0).map((_,d) => `<span class="rel-dot ${d < Math.round(rel/20) ? 'filled' : ''}"></span>`).join('');
     const articleUrl = a.url || a.link || '#';
     const isPaywall = a.paywall && (!a.url || a.url === '#');
