@@ -1175,14 +1175,32 @@ function guessSector(title, body, defaultSector) {
 function qualityScore(a) {
   const text = ((a.title||'') + ' ' + (a.body||'')).toLowerCase();
   let score = 10;
+
+  // 1. בונוס לפי איכות המקור (Tiering)
   if (TIER1.some(x => a.source.includes(x))) score += 30;
   else if (TIER2.some(x => a.source.includes(x))) score += 20;
   else score += 12;
 
-  // Additional points for core alternative markets
+  // 2. בונוס "גיוס קרנות ואירועי GP" (הבקשה שלך)
+  // מחפש ביטויים כמו: גיוס, סגירה, יעד, קרן חדשה, וכדומה
+  const fundEventKeywords = [
+    "fundraise", "fundraising", "raised", "raising", "closes", "closed", 
+    "first close", "final close", "hard cap", "target", "launches fund", 
+    "new fund", "vintage", "capital commitment", "gp-led", "continuation fund",
+    "dry powder", "lp", "limited partner", "commitment"
+  ];
+
+  if (fundEventKeywords.some(kw => text.includes(kw))) {
+    score += 25; // תוספת משמעותית שתקפיץ את הידיעה לראש הפיד או ל-Hero
+  }
+
+  // 3. בונוס לפי סקטורים מועדפים
   if (a.sector === 'PE' || a.sector === 'Credit' || a.sector === 'Infra') score += 5;
+
+  // 4. בונוס על טריות (Recency)
   if (a.time.includes('h ago') || a.time.includes('just now')) score += 10;
 
+  // הגבלה לטווח של 0-100
   return Math.max(0, Math.min(100, score));
 }
 
