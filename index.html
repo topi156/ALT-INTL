@@ -1309,33 +1309,50 @@ async function fetchFeed(feed) {
 }
 
 async function loadArticles(sector = null) {
-  document.getElementById('feed-container').innerHTML =
+  document.getElementById('feed-container').innerHTML = 
     `<div style="padding:40px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim)">Loading live feeds...</div>`;
 
   nextId = 1;
 
-  const results = await Promise.all(RSS_FEEDS.map(fetchFeed));
-  let all = results.flat();
+  try {
+    const results = await Promise.all(RSS_FEEDS.map(fetchFeed));
+    let all = results.flat();
 
-  // Dedup by URL
-  const seen = new Set();
-  all = all.filter(a => {
-    const k = (a.url || '').split('?')[0];
-    if (!k || seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
+    // הסרת כפילויות
+    const seen = new Set();
+    all = all.filter(a => {
+      const k = (a.url || '').split('?')[0];
+      if (!k || seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
 
-  // Sort by recency
-  all.sort((a, b) => (b._ts || 0) - (a._ts || 0));
-
-  if (all.length === 0) {
+    // בדיקה: האם הצלחנו להביא ידיעות חדשות?
+    if (all.length > 0) {
+      console.log(`Successfully loaded ${all.length} new articles.`);
+      articles = all;
+      // שומרים בזיכרון המקומי של הדפדפן להבא
+      localStorage.setItem('alt_intel_cache', JSON.stringify(all));
+    } else {
+      // אם לא הצלחנו להביא כלום (חסימה), ננסה לטעון מהזיכרון
+      const cachedData = localStorage.getItem('alt_intel_cache');
+      if (cachedData) {
+        console.warn("Feeds blocked or empty. Loading from cache...");
+        articles = JSON.parse(cachedData);
+      } else {
+        console.warn("Feeds blocked and no cache found. Showing demo data.");
+        articles = getDemoArticles();
+      }
+    }
+  } catch (error) {
+    console.error("Critical error loading articles:", error);
     articles = getDemoArticles();
-  } else {
-    articles = all;
   }
 
-  // Live briefing = top by qscore from last 24h
+  // מיון לפי זמן
+  articles.sort((a, b) => (b._ts || 0) - (a._ts || 0));
+
+  // עדכון ה-Live Briefing
   const h24 = Date.now() - 24 * 60 * 60 * 1000;
   window._liveArticles = articles
     .filter(a => !a._ts || a._ts >= h24)
