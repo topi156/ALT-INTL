@@ -223,7 +223,7 @@ body::before {
   color: rgba(245,242,235,0.75);
 }
 
-.ticker-item strong { color: var(--bg); font-weight: 500; }
+.ticker-item strong { color: var(--bg); font-weight: 500; margin-right: 5px; color: var(--accent); }
 
 @keyframes ticker-scroll {
   0% { transform: translateX(0); }
@@ -424,16 +424,6 @@ body::before {
   font-weight: 300;
   font-style: italic;
 }
-
-.typing-cursor {
-  display: inline-block;
-  width: 2px; height: 14px;
-  background: var(--accent2);
-  animation: blink 0.8s steps(1) infinite;
-  vertical-align: middle;
-  margin-right: 2px;
-}
-@keyframes blink { 50% { opacity:0; } }
 
 .article-actions {
   display: flex;
@@ -837,10 +827,6 @@ body::before {
 .spin { animation: spin 1.2s linear infinite; display:inline-block; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Skeleton */
-.skel { background: linear-gradient(90deg, var(--bg2) 25%, #e8e3d8 50%, var(--bg2) 75%); background-size: 400%; animation: shimmer 1.5s infinite; border-radius: 2px; }
-@keyframes shimmer { 0% { background-position:100% 0; } 100% { background-position:-100% 0; } }
-
 ::-webkit-scrollbar { height: 3px; width: 3px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--rule); }
@@ -907,22 +893,7 @@ body::before {
   <div class="ticker-label">BREAKING</div>
   <div class="ticker-track">
     <div class="ticker-inner" id="ticker-inner">
-      <span class="ticker-item"><strong>KKR</strong> closes $20B flagship fund, surpassing $18B target</span>
-      <span class="ticker-item"><strong>FED</strong> officials signal caution on rate cuts — PE valuations under pressure</span>
-      <span class="ticker-item"><strong>BROOKFIELD</strong> acquires Australian energy assets for $4.5B</span>
-      <span class="ticker-item"><strong>APOLLO</strong> raises $15B for credit strategies fund</span>
-      <span class="ticker-item"><strong>BLACKSTONE</strong> reports 14% AUM growth in Q1 — real estate drag persists</span>
-      <span class="ticker-item"><strong>PRIVATE CREDIT</strong> spreads tighten 45bps YTD as institutional demand surges</span>
-      <span class="ticker-item"><strong>CARLYLE</strong> eyes €7.5B European healthcare buyout</span>
-      <span class="ticker-item"><strong>MULTI-STRATEGY</strong> hedge funds post best Q1 returns since 2020</span>
-      <span class="ticker-item"><strong>KKR</strong> closes $20B flagship fund, surpassing $18B target</span>
-      <span class="ticker-item"><strong>FED</strong> officials signal caution on rate cuts — PE valuations under pressure</span>
-      <span class="ticker-item"><strong>BROOKFIELD</strong> acquires Australian energy assets for $4.5B</span>
-      <span class="ticker-item"><strong>APOLLO</strong> raises $15B for credit strategies fund</span>
-      <span class="ticker-item"><strong>BLACKSTONE</strong> reports 14% AUM growth in Q1 — real estate drag persists</span>
-      <span class="ticker-item"><strong>PRIVATE CREDIT</strong> spreads tighten 45bps YTD as institutional demand surges</span>
-      <span class="ticker-item"><strong>CARLYLE</strong> eyes €7.5B European healthcare buyout</span>
-      <span class="ticker-item"><strong>MULTI-STRATEGY</strong> hedge funds post best Q1 returns since 2020</span>
+      <span class="ticker-item">Loading live intel...</span>
     </div>
   </div>
 </div>
@@ -1003,66 +974,37 @@ body::before {
 
 <script>
 // ─────────────────────────────────────
-// DATA
-// ─────────────────────────────────────
-// ─────────────────────────────────────
-// CONFIG
-// ─────────────────────────────────────
-// ─────────────────────────────────────
-// RSS FEEDS — real articles, no backend needed
+// RSS FEEDS — HYBRID APPROACH (Open + Premium)
 // ─────────────────────────────────────
 const RSS_FEEDS = [
-  // ── PE / VC ─────────────────────────────────────────
-  { url: "https://www.privateequitywire.co.uk/feed/",                source: "PE Wire",         sector: "PE",    paywall: true  },
-  { url: "https://www.buyoutsinsider.com/feed/",                     source: "Buyouts Insider", sector: "PE",    paywall: true  },
-  { url: "https://www.privateequityinternational.com/feed/",         source: "PEI",             sector: "PE",    paywall: true  },
+  // ── Open / Free Sources (Get +15 Score Bonus) ─────────
+  { url: "https://pitchbook.com/blog/rss.xml",                       source: "PitchBook (Open)",sector: "PE",    paywall: false },
   { url: "https://altassets.net/feed",                               source: "AltAssets",       sector: "PE",    paywall: false },
-  { url: "https://pitchbook.com/blog/rss.xml",                       source: "PitchBook",       sector: "PE",    paywall: false },
-  { url: "https://www.theguardian.com/business/privateequity/rss",   source: "Guardian PE",     sector: "PE",    paywall: false },
-  { url: "https://businesswire.com/rss/home/rss_homepage.rss",       source: "Business Wire",   sector: "PE",    paywall: false },
-  { url: "https://www.pehub.com/feed/",                              source: "PE Hub",          sector: "PE",    paywall: false },
   { url: "https://techcrunch.com/category/venture/feed/",            source: "TechCrunch VC",   sector: "PE",    paywall: false },
-
-  // ── Infrastructure ──────────────────────────────────
-  { url: "https://www.infrastructureinvestor.com/feed/",             source: "Infra Investor",  sector: "Infra", paywall: true  },
   { url: "https://renewablesnow.com/news/rss/",                      source: "Renewables Now",  sector: "Infra", paywall: false },
   { url: "https://www.rechargenews.com/rss",                         source: "Recharge News",   sector: "Infra", paywall: false },
-  { url: "https://www.pv-tech.org/feed/",                            source: "PV Tech",         sector: "Infra", paywall: false },
-
-  // ── Real Estate ─────────────────────────────────────
-  { url: "https://www.perenews.com/feed/",                           source: "PERE News",       sector: "RE",    paywall: true  },
   { url: "https://therealdeal.com/feed/",                            source: "The Real Deal",   sector: "RE",    paywall: false },
-  { url: "https://www.globest.com/feed/",                            source: "GlobeSt",         sector: "RE",    paywall: false },
   { url: "https://www.commercialobserver.com/feed/",                 source: "Commercial Observer", sector: "RE", paywall: false },
-  { url: "https://www.mingtiandi.com/feed/",                         source: "Mingtiandi",      sector: "RE",    paywall: false },
-
-  // ── Hedge / Credit ──────────────────────────────────
   { url: "https://opalesque.com/rss.xml",                            source: "Opalesque",       sector: "Hedge", paywall: false },
-  { url: "https://www.fnlondon.com/rss",                             source: "FN London",       sector: "Credit",paywall: true  },
+  { url: "https://news.google.com/rss/search?q=%22private+equity%22+OR+%22private+credit%22+site:yahoo.com&hl=en-US&gl=US&ceid=US:en", source: "Yahoo Finance", sector: "Macro", paywall: false },
+  { url: "https://news.google.com/rss/search?q=%22private+equity%22+OR+%22hedge+fund%22+site:cnbc.com&hl=en-US&gl=US&ceid=US:en", source: "CNBC", sector: "Macro", paywall: false },
+  { url: "https://news.google.com/rss/search?q=site:reuters.com+(%22private+equity%22+OR+%22private+credit%22+OR+%22hedge+fund%22)&hl=en-US&gl=US&ceid=US:en", source: "Reuters", sector: "Macro", paywall: false },
 
-  // ── Premium / Harder to reach (Proxies / Google News)
-  { url: "https://www.ft.com/stream/ab70c42c-4d60-4851-89bb-16e2daeddfc1?format=rss", source: "FT Private Equity", sector: "PE",    paywall: true  },
-  { url: "https://www.cnbc.com/id/10001147/device/rss/rss.html",                      source: "CNBC",             sector: "Macro", paywall: false },
-  { url: "https://unquote.com/feeds/rss",                                              source: "Unquote",          sector: "PE",    paywall: true  },
-  { url: "https://feeds.content.dowjones.io/public/rss/RSSMarketsMain",               source: "WSJ Markets",      sector: "Macro", paywall: true  },
-  
-  // ── Macro / Multi & Restored Heavyweights ───────────
-  { url: "https://feeds.reuters.com/reuters/businessNews",           source: "Reuters",         sector: "Macro", paywall: false },
-  { url: "https://feeds.reuters.com/reuters/financialNews",          source: "Reuters Finance", sector: "Macro", paywall: false },
-  { url: "https://news.google.com/rss/search?q=pitchbook+%22private+equity%22+OR+%22private+credit%22+OR+%22venture+capital%22&hl=en-US&gl=US&ceid=US:en", source: "PitchBook News", sector: "PE", paywall: false },
-  { url: "https://news.google.com/rss/search?q=%22cambridge+associates%22+%22private+equity%22+OR+%22private+markets%22+OR+%22alternatives%22&hl=en-US&gl=US&ceid=US:en", source: "Cambridge Associates", sector: "Macro", paywall: false },
-  { url: "https://news.google.com/rss/search?q=site%3Abloomberg.com+(%22private+equity%22+OR+%22private+credit%22)&hl=en-US&gl=US&ceid=US:en", source: "Bloomberg (Google)", sector: "PE", paywall: true },
-  { url: "https://news.google.com/rss/search?q=preqin+(%22private+equity%22+OR+%22private+credit%22)&hl=en-US&gl=US&ceid=US:en", source: "Preqin (Google)", sector: "PE", paywall: false },
-  { url: "https://news.google.com/rss/search?q=site%3Ainstitutionalinvestor.com+%22private+markets%22+OR+%22private+equity%22+OR+%22hedge+fund%22&hl=en-US&gl=US&ceid=US:en", source: "Inst. Investor", sector: "Macro", paywall: false }
+  // ── Premium / Closed Sources (Get slight penalty, but are kept for breaking major news) ─────────
+  { url: "https://news.google.com/rss/search?q=site:bloomberg.com+(%22private+equity%22+OR+%22private+credit%22)&hl=en-US&gl=US&ceid=US:en", source: "Bloomberg", sector: "PE", paywall: true },
+  { url: "https://news.google.com/rss/search?q=pitchbook+%22private+equity%22+OR+%22private+credit%22&hl=en-US&gl=US&ceid=US:en", source: "PitchBook News", sector: "PE", paywall: true },
+  { url: "https://feeds.content.dowjones.io/public/rss/RSSMarketsMain", source: "WSJ Markets", sector: "Macro", paywall: true },
+  { url: "https://www.ft.com/stream/ab70c42c-4d60-4851-89bb-16e2daeddfc1?format=rss", source: "Financial Times", sector: "PE", paywall: true },
+  { url: "https://www.privateequitywire.co.uk/feed/",                source: "PE Wire",         sector: "PE",    paywall: true  },
+  { url: "https://www.infrastructureinvestor.com/feed/",             source: "Infra Investor",  sector: "Infra", paywall: true  },
+  { url: "https://www.perenews.com/feed/",                           source: "PERE News",       sector: "RE",    paywall: true  },
 ];
 
 const RSS2JSON = "https://api.rss2json.com/v1/api.json?rss_url=";
 
-// Time window filter (last N days)
 const MAX_DAYS = 30;
-const AI_ENABLED = true; // requires proxy
-const API_BASE = ""; // set to proxy base URL, e.g. https://your-proxy
-
+const AI_ENABLED = true; 
+const API_BASE = ""; 
 
 function isWithinTimeWindow(pubDate) {
   if (!pubDate) return false;
@@ -1072,7 +1014,6 @@ function isWithinTimeWindow(pubDate) {
   return diff <= MAX_DAYS * 24 * 60 * 60 * 1000;
 }
 
-// Keyword-based sector guesser
 const SECTOR_KEYWORDS = {
   PE:     ["private equity","buyout","lbo","kkr","carlyle","blackstone","apollo","eqt","warburg","advent","bain capital", "venture capital", "growth equity"],
   Credit: ["private credit","direct lending","credit fund","private debt","leveraged loan","ares","blue owl","golub"],
@@ -1082,134 +1023,54 @@ const SECTOR_KEYWORDS = {
   Macro:  ["interest rate","federal reserve","fed","inflation","gdp","central bank","ecb","monetary","pension","sovereign wealth"],
 };
 
-// ─────────────────────────────────────
-// ALT-ONLY FILTER (sector-aware, Infra/RE friendly)
-// ─────────────────────────────────────
-const FILTER_MODE = 'smart'; // 'off' | 'smart'
-
-const EXCLUDE_NOISE = [
-  "crypto","bitcoin","ethereum","meme stock","sports betting","celebrity","fashion",
-  "iphone","android","retail trading","day trading","earnings call"
-];
-
-// Broad but still "alts" oriented
-const ALT_CORE = [
-  "private markets","alternative investments","alternatives",
-  "private equity","buyout","lbo","gp","lp","limited partner","general partner",
-  "fundraising","first close","final close","hard cap","second close",
-  "private credit","direct lending","private debt","special situations",
-  "secondaries","secondary","gp-led","continuation fund",
-  "nav loan","nav facility","subscription line",
-  "infrastructure fund","real estate fund","repe","hedge fund", "venture capital"
-];
-
-// Relaxed dictionaries for Infra/RE so they don't get filtered out
-const INFRA_RELAX = [
-  "infrastructure","renewable","energy transition","solar","wind","battery","grid","utility",
-  "digital infrastructure","data center","datacenter","fiber","fibre","tower","airport","port","toll road","rail","pipeline","lng"
-];
-
-const RE_RELAX = [
-  "real estate","property","reit","commercial real estate","cre","logistics","warehouse",
-  "multifamily","housing","student housing","self storage","self-storage","hospitality","office"
-];
-
-// If the source is already a niche alts outlet, be lenient
-const TRUSTED_ALTS_SOURCES = [
-  "PE Wire","Infra Investor","Infrastructure Investor","PERE","PERE News","PEI","Unquote","Buyouts Insider",
-  "AltAssets","PitchBook","Opalesque","Harvard Law","Institutional Investor","Global SWF","Alternative Credit Investor",
-  "Mingtiandi", "TechCrunch VC", "Bloomberg (Google)"
-];
-
-const TIER1 = ['Financial Times','FT','Reuters','Bloomberg','PEI','Private Equity International','Secondaries Investor','Infra Investor','PE Wire', 'PitchBook', 'Mingtiandi'];
-const TIER2 = ['Institutional Investor','Unquote','AltAssets','WSJ','Wall Street Journal','The Economist','Fortune','Google', 'TechCrunch VC'];
-
-
-function textHasAny(t, arr) {
-  return arr.some(k => t.includes(k));
-}
-
-function isAltRelevant(item) {
-  const t = ((item.title || "") + " " + (item.body || "")).toLowerCase();
-
-  // kill obvious noise early
-  if (textHasAny(t, EXCLUDE_NOISE)) return false;
-
-  const isTrusted = TRUSTED_ALTS_SOURCES.some(s => (item.source || "").toLowerCase().includes(s.toLowerCase()));
-
-  if (item.sector === "Infra") {
-    return isTrusted || textHasAny(t, INFRA_RELAX) || textHasAny(t, ALT_CORE);
-  }
-
-  if (item.sector === "RE") {
-    return isTrusted || textHasAny(t, RE_RELAX) || textHasAny(t, ALT_CORE);
-  }
-
-  // PE/Credit/Hedge/Macro: stricter
-  return isTrusted || textHasAny(t, ALT_CORE);
-}
-
-// Alt-markets allowlist filter (to keep feed strictly alternatives) 
 function guessSector(title, body, defaultSector) {
   const t = ((title||'') + ' ' + (body||'')).toLowerCase();
-
-  // Credit first — avoid "Breit" falsely matching reit
   if (/(private credit|direct lending|private debt|unitranche|mezzanine|leveraged loan|bdc|distressed debt)/i.test(t)) return 'Credit';
   if (/\bcredit\b.*(spread|fund|facility|lending|loan)/i.test(t)) return 'Credit';
-
-  // Infrastructure
   if (/(infrastructure|infra fund|digital infra|data cent(er|re)|renewable(s)?|energy transition|clean energy|solar farm|wind farm|offshore wind|battery storage|power grid|toll road|airport|seaport|pipeline|lng terminal|fiber network|cell tower)/i.test(t)) return 'Infra';
   if (/(stonepeak|macquarie infra|brookfield infra|\bgip\b|ifm investors)/i.test(t)) return 'Infra';
-
-  // Real Estate
   if (/(real estate|commercial property|\brepe\b|multifamily|residential property|office (building|market|space)|logistics park|warehouse|build.to.rent|student housing|senior housing|self.storage|cap rate|\bnoi\b|vacancy rate|rent growth)/i.test(t)) return 'RE';
   if (/\breit\b/i.test(t)) return 'RE';
   if (/(prologis|hines|cbre|jll|cushman|mingtiandi)/i.test(t)) return 'RE';
-
-  // Hedge
   if (/(hedge fund|long.short|multi.strategy|global macro|quant fund|managed futures|activist investor|short seller|event.driven)/i.test(t)) return 'Hedge';
-
   return defaultSector;
 }
+
+const TIER1 = ['PitchBook', 'Bloomberg', 'Financial Times', 'WSJ Markets', 'Reuters', 'PE Wire', 'Yahoo Finance', 'CNBC'];
+const TIER2 = ['TechCrunch VC', 'The Real Deal', 'AltAssets', 'Renewables Now', 'GlobeSt'];
 
 function qualityScore(a) {
   const title = (a.title || '').toLowerCase();
   const body = (a.body || '').toLowerCase();
   const fullText = title + " " + body;
   
-  // ציון בסיס
   let score = 25; 
 
-  // 1. בונוס מקורות משמעותי (Tier 1 מקבלים דחיפה חזקה)
-  if (TIER1.some(x => a.source.includes(x))) score += 20;
+  if (TIER1.some(x => a.source.includes(x))) score += 15;
   else if (TIER2.some(x => a.source.includes(x))) score += 10;
 
-  // 2. הבונוס המרכזי: גיוסי קרנות, סגירות ואירועי GP/LP
-  // מילות מפתח שנוגעות ישירות ל"ביזנס" של הניהול
-  const fundEventKeywords = [
-    "fundraise", "fundraising", "raised", "raising", "closes", "closed", 
-    "first close", "final close", "hard cap", "target", "launches fund", 
-    "new fund", "vintage", "capital commitment", "gp-led", "continuation fund",
-    "dry powder", "lp", "limited partner", "commitment", "secures $", "reaches $"
+  if (a.paywall === false) {
+    score += 15; 
+  } else {
+    score -= 5;  
+  }
+
+  const fundEventKeywords = ["fundraise", "fundraising", "raised", "raising", "closes", "closed", "first close", "final close", "hard cap", "target", "launches fund", "new fund", "vintage", "gp-led", "dry powder", "lp", "limited partner", "commitment"];
+  if (fundEventKeywords.some(kw => fullText.includes(kw))) score += 20; 
+  if (fundEventKeywords.some(kw => title.includes(kw))) score += 10;
+
+  const macroTechKeywords = [
+    "software", "saas", "tech valuation", "artificial intelligence", "ai startup", "openai", "anthropic",
+    "interest rate", "fed", "federal reserve", "rate cut", "inflation", 
+    "downturn", "distressed", "layoffs", "restructuring", "bankruptcy", 
+    "sec", "regulation", "antitrust", "doj"
   ];
+  if (macroTechKeywords.some(kw => fullText.includes(kw))) score += 30;
+  if (macroTechKeywords.some(kw => title.includes(kw))) score += 15;
 
-  if (fundEventKeywords.some(kw => fullText.includes(kw))) {
-    score += 45; // בונוס דרמטי להבטחת מקום ב-Hero
-  }
+  const consumerKeywords = ["watchmaker", "dolls", "toy", "lifestyle", "luxury brand", "retailer", "hasbro", "mattel", "movie", "celebrity"];
+  if (consumerKeywords.some(kw => fullText.includes(kw))) score -= 40;
 
-  // 3. בונוס כותרת: אם מילת המפתח היא בכותרת, זה כנראה הסיפור המרכזי
-  if (fundEventKeywords.some(kw => title.includes(kw))) {
-    score += 15;
-  }
-
-  // 4. עונש (Penalty) לכתבות "לייף סטייל" או מותגי צריכה שזולגות לסקטור
-  // זה יוריד את הציונים של כתבות כמו אלו שרואים בתמונה (Breitling, Mattel, Hasbro)
-  const consumerKeywords = ["watchmaker", "dolls", "toy", "lifestyle", "luxury brand", "retailer", "hasbro", "mattel"];
-  if (consumerKeywords.some(kw => fullText.includes(kw))) {
-    score -= 30;
-  }
-
-  // הגבלה לטווח 0-100
   return Math.max(0, Math.min(100, score));
 }
 
@@ -1224,9 +1085,7 @@ let briefingText = '';
 let articles = [];
 let nextId = 1;
 
-
-// Auto-refresh (keeps analysts up to date without manual refresh)
-let AUTO_REFRESH_MS = 4 * 60 * 1000; // 4 minutes
+let AUTO_REFRESH_MS = 4 * 60 * 1000;
 let autoTimer = null;
 
 function startAutoRefresh() {
@@ -1239,16 +1098,11 @@ function stopAutoRefresh() {
   autoTimer = null;
 }
 
-// Pause refresh when tab is not visible (reduces quota / rate-limit risk)
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) stopAutoRefresh();
   else startAutoRefresh();
 });
 
-
-// ─────────────────────────────────────
-// INIT
-// ─────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   const d = new Date();
   document.getElementById('current-date').textContent =
@@ -1260,21 +1114,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   startAutoRefresh();
 });
 
-// ─────────────────────────────────────
-// LOAD REAL RSS FEEDS
-// ─────────────────────────────────────
 async function fetchFeed(feed) {
   const enc = encodeURIComponent(feed.url);
-  // הוספת מספר אקראי כדי למנוע מהפרוקסי להחזיר תוצאה חסומה מהזיכרון
   const cacheBuster = `&cb=${Math.random()}`;
 
   const mapItems = (items, urlField) => items.map(item => {
     const title = item.title || '';
     const body = (item.description || item.content || '').replace(/<[^>]+>/g, '').substring(0, 300);
     const sec = guessSector(title, body, feed.sector);
-    const q = { title, body, sector: sec, source: feed.source, time: item.pubDate || item.updated || '' };
     
-    return {
+    let articleObj = {
       id: nextId++,
       title: title,
       body: body,
@@ -1282,20 +1131,21 @@ async function fetchFeed(feed) {
       source: feed.source,
       sector: sec,
       rel: estimateRelevance(title, body),
-      qscore: qualityScore(q),
       time: timeAgo(item.pubDate || item.updated || ''),
       _pubDate: item.pubDate || item.updated || null,
       _ts: new Date(item.pubDate || item.updated || 0).getTime() || 0,
       paywall: feed.paywall || false,
       aiSummary: null,
+      qscore: 0 
     };
+    
+    articleObj.qscore = qualityScore(articleObj);
+    return articleObj;
   });
 
-  // ניסיון ראשון: AllOrigins (פרוקסי חזק יותר)
   try {
     const res = await fetch(`https://api.allorigins.win/get?url=${enc}${encodeURIComponent(cacheBuster)}`);
     const data = await res.json();
-    // AllOrigins מחזיר את ה-XML כטקסט בתוך שדה contents
     const xml = data.contents;
     const doc = new DOMParser().parseFromString(xml, 'text/xml');
     const els = Array.from(doc.querySelectorAll('item, entry'));
@@ -1308,9 +1158,8 @@ async function fetchFeed(feed) {
       }));
       return mapItems(items, 'link');
     }
-  } catch(e) { console.warn(`AllOrigins failed for ${feed.source}`); }
+  } catch(e) { }
 
-  // ניסיון שני: RSS2JSON (הגיבוי שלך)
   try {
     const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${enc}${cacheBuster}`);
     const data = await res.json();
@@ -1332,7 +1181,6 @@ async function loadArticles(sector = null) {
     const results = await Promise.all(RSS_FEEDS.map(fetchFeed));
     let all = results.flat();
 
-    // הסרת כפילויות
     const seen = new Set();
     all = all.filter(a => {
       const k = (a.url || '').split('?')[0];
@@ -1341,44 +1189,42 @@ async function loadArticles(sector = null) {
       return true;
     });
 
-    // בדיקה: האם הצלחנו להביא ידיעות חדשות?
     if (all.length > 0) {
-      console.log(`Successfully loaded ${all.length} new articles.`);
       articles = all;
-      // שומרים בזיכרון המקומי של הדפדפן להבא
       localStorage.setItem('alt_intel_cache', JSON.stringify(all));
     } else {
-      // אם לא הצלחנו להביא כלום (חסימה), ננסה לטעון מהזיכרון
       const cachedData = localStorage.getItem('alt_intel_cache');
-      if (cachedData) {
-        console.warn("Feeds blocked or empty. Loading from cache...");
-        articles = JSON.parse(cachedData);
-      } else {
-        console.warn("Feeds blocked and no cache found. Showing demo data.");
-        articles = getDemoArticles();
-      }
+      if (cachedData) articles = JSON.parse(cachedData);
+      else articles = getDemoArticles();
     }
   } catch (error) {
-    console.error("Critical error loading articles:", error);
     articles = getDemoArticles();
   }
 
-  // מיון לפי זמן
   articles.sort((a, b) => (b._ts || 0) - (a._ts || 0));
 
-  // עדכון ה-Live Briefing
-  const h24 = Date.now() - 24 * 60 * 60 * 1000;
-  window._liveArticles = articles
-    .filter(a => !a._ts || a._ts >= h24)
-    .sort((a, b) => (b.qscore || 0) - (a.qscore || 0))
-    .slice(0, 12);
-
   currentFilter = sector || 'all';
+  
+  updateTicker();
   renderHero();
   renderFeed();
   renderSidebar();
 }
 
+function updateTicker() {
+  const tickerInner = document.getElementById('ticker-inner');
+  if(!articles || articles.length === 0) return;
+
+  const topForTicker = articles.slice()
+                               .sort((a,b) => (b._ts||0) - (a._ts||0))
+                               .slice(0, 10);
+
+  const tickerHtml = topForTicker.map(a => 
+    `<span class="ticker-item"><strong>${a.source.toUpperCase()}</strong> ${a.title}</span>`
+  ).join('');
+
+  tickerInner.innerHTML = tickerHtml + tickerHtml;
+}
 
 function timeAgo(dateStr) {
   if (!dateStr) return 'recently';
@@ -1390,17 +1236,24 @@ function timeAgo(dateStr) {
 }
 
 // ─────────────────────────────────────
-// HERO
+// HERO - 24 HOURS LIMIT
 // ─────────────────────────────────────
 function renderHero() {
   const now = Date.now();
-  const h24 = 24 * 60 * 60 * 1000;
+  const H24 = 24 * 60 * 60 * 1000;
 
-  // Top 3 by qscore from last 24 hours; fallback to all articles if not enough
-  let pool = articles.filter(a => a._ts && (now - a._ts) <= h24);
-  if (pool.length < 3) pool = articles; // fallback to all if feeds are slow
+  // סינון לכתבות מה-24 שעות האחרונות בלבד
+  let recentArticles = articles.filter(a => a._ts && (now - a._ts) <= H24);
 
-  const top3 = pool.slice().sort((a,b) => (b.qscore||0) - (a.qscore||0)).slice(0,3);
+  // הגנת UI: אם אין שום כתבה מהיממה האחרונה, ניקח מכל המאגר כדי לא לשבור את העיצוב (רק למקרה קיצון)
+  if (recentArticles.length === 0) {
+    recentArticles = articles;
+  }
+
+  // מיון לפי הציון ולקיחת ה-3 הטובות ביותר (מתוך אלו שעברו את סינון הזמן)
+  const top3 = recentArticles.slice()
+                             .sort((a,b) => (b.qscore||0) - (a.qscore||0))
+                             .slice(0,3);
 
   const colors = { PE:'var(--pe-c)', Credit:'var(--credit-c)', Infra:'var(--infra-c)', RE:'var(--re-c)', Hedge:'var(--hedge-c)', Macro:'var(--macro-c)' };
 
@@ -1409,7 +1262,7 @@ function renderHero() {
       <div class="hero-kicker" style="color:${colors[a.sector] || 'var(--ink-mid)'}">
         ${a.sector} · ${a.source}
         <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--ink-dim);margin-left:8px;">${a.time}</span>
-        <span style="font-family:'JetBrains Mono',monospace;font-size:8px;background:${colors[a.sector]||'var(--ink-dim)'};color:#fff;padding:1px 5px;margin-left:4px;opacity:0.85;">${a.qscore||0}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:8px;background:${colors[a.sector]||'var(--ink-dim)'};color:#fff;padding:1px 5px;margin-left:4px;opacity:0.85;">Score: ${a.qscore||0}</span>
       </div>
       <div class="hero-headline">${a.title}</div>
       <div class="hero-deck">${(a.body||'').substring(0,130)}…</div>
@@ -1423,11 +1276,15 @@ function renderHero() {
 
 function whyItMatters(a) {
   const t = ((a.title||'') + ' ' + (a.body||'')).toLowerCase();
+  
+  if (/(software|saas|tech valuation|downturn)/i.test(t)) return 'Tech Sector Impact — affects private equity portfolios heavily weighted towards SaaS and software buyouts.';
+  if (/(ai|artificial intelligence|openai|anthropic)/i.test(t)) return 'AI Disruption — requires GPs to evaluate structural impacts on existing portfolios and opens new infra/VC opportunities.';
+  if (/(interest rate|fed|inflation|rate cut)/i.test(t)) return 'Macro Headwind/Tailwind — directly influences cost of debt, valuations, and exit environments across all private markets.';
+
   if (/(first close|final close|fundraise|raised|hard cap|close on)/i.test(t)) return 'LP allocation signal — indicates appetite for this strategy and vintage.';
   if (/(lbo|take.private|acqui|buyout|merger)/i.test(t)) return 'Deal activity — relevant for comparable valuations and sector momentum.';
   if (/(secondar|gp.led|continuation|gp stake)/i.test(t)) return 'Liquidity signal — reflects GP sentiment and portfolio valuations.';
   if (/(nav loan|direct lending|private credit|unitranche)/i.test(t)) return 'Credit market signal — impacts cost of capital and deal structuring.';
-  if (/(default|distress|restructur|redemption|gate)/i.test(t)) return 'Watch for contagion risk — potential impact on valuations and redemptions.';
   if (a.sector === 'Infra') return 'Infrastructure deployment signal — energy transition and digital infra remain LP priorities.';
   if (a.sector === 'RE') return 'Real estate repricing — cap rate movements affect RE fund NAVs and exit timing.';
   if (a.sector === 'Credit') return 'Credit dynamics — directly affects direct lending returns and deal flow.';
@@ -1437,17 +1294,13 @@ function whyItMatters(a) {
 
 function renderFeed() {
   const list = currentFilter === 'all' ? articles : articles.filter(a => a.sector === currentFilter);
-  // ... (שאר הקוד)
+  document.getElementById('feed-count').textContent = `— ${list.length} articles`;
 
   document.getElementById('feed-container').innerHTML = list.map((a, i) => {
-    // הוסף את השורה הזו כאן כדי לעדכן את הציון לפי הלוגיקה החדשה:
-    a.qscore = qualityScore(a); 
-    
     const rel = a.rel || 75;
-    // ... המשך הרינדור הקיים
     const dots = Array(5).fill(0).map((_,d) => `<span class="rel-dot ${d < Math.round(rel/20) ? 'filled' : ''}"></span>`).join('');
     const articleUrl = a.url || a.link || '#';
-    const isPaywall = a.paywall && (!a.url || a.url === '#');
+    
     return `
     <a class="article" style="animation-delay:${i * 0.04}s; text-decoration:none; color:inherit; display:grid; grid-template-columns:1fr auto; gap:16px;" href="${articleUrl}" target="_blank">
       <div class="article-left">
@@ -1470,7 +1323,7 @@ function renderFeed() {
             ? '<span class="read-more">🔒 Read Article →</span>'
             : '<span class="read-more">Read Free →</span>'
           }
-          <div class="rel-score"><div class="rel-dots">${dots}</div>${rel}%</div>
+          <div class="rel-score"><div class="rel-dots">${dots}</div>Score: ${a.qscore}</div>
           <button class="action-btn ${a.aiSummary ? 'summarized' : ''}"
             onclick="event.preventDefault(); event.stopPropagation(); summarize(${a.id}, this);"
             ${a.aiSummary ? 'disabled' : ''}>
@@ -1519,12 +1372,10 @@ function renderSidebar() {
     </div>
   `).join('');
 
-  // Group articles by source for sidebar
   const sourceCounts = {};
   articles.forEach(a => { sourceCounts[a.source] = (sourceCounts[a.source] || 0) + 1; });
   const sources = Object.entries(sourceCounts).sort((x,y) => y[1]-x[1]).slice(0,8);
 
-  // Fallback missing sources variable to empty array if not defined previously
   const FALLBACK_SOURCES = [];
 
   document.getElementById('sources-widget').innerHTML = (sources.length ? sources : FALLBACK_SOURCES.map(s => [s.name, s.count])).map(([name, count]) => `
@@ -1536,13 +1387,9 @@ function renderSidebar() {
   `).join('');
 }
 
-// ─────────────────────────────────────
-// AI: SINGLE ARTICLE — via backend
-// ─────────────────────────────────────
 async function summarize(id, btn) {
   try {
     if (!AI_ENABLED) { alert('AI is disabled. Configure the proxy and set AI_ENABLED=true.'); return; }
-
     const a = articles.find(x => x.id === id);
     if (!a) return;
     if (btn) btn.disabled = true;
@@ -1561,35 +1408,22 @@ async function summarize(id, btn) {
 
     if (!res.ok) throw new Error(`Summarize failed: ${res.status}`);
     const data = await res.json();
-
     a.aiSummary = data.summary || '';
-    a.aiScore = data.score ?? null;
-
-    // re-render current view
-    renderFeed(currentFilter);
+    renderFeed();
   } catch (e) {
-    console.error(e);
     alert('AI Analyze failed. Check proxy is running and API key is set.');
   } finally {
     if (btn) btn.disabled = false;
   }
 }
 
-// ─────────────────────────────────────
-// AI: DAILY BRIEFING — via backend
-// ─────────────────────────────────────
 async function generateBriefing() {
   try {
     const btn = document.getElementById('gen-btn');
     if (btn) btn.disabled = true;
 
-    // Use the currently displayed list (filtered + sorted)
-    const items = (window._visibleArticles || articles || []).slice(0, 30).map(a => ({
-      title: a.title,
-      url: a.url,
-      source: a.source,
-      sector: a.sector,
-      time: a.time
+    const items = articles.slice(0, 30).map(a => ({
+      title: a.title, url: a.url, source: a.source, sector: a.sector, time: a.time
     }));
 
     const res = await fetch((API_BASE ? `${API_BASE}/api/briefing` : `/api/briefing`), {
@@ -1600,11 +1434,9 @@ async function generateBriefing() {
 
     if (!res.ok) throw new Error(`Briefing failed: ${res.status}`);
     const data = await res.json();
-
     const out = document.getElementById('briefing-output');
     if (out) out.textContent = data.briefing || '';
   } catch (e) {
-    console.error(e);
     alert('Briefing failed. Check proxy is running and API key is set.');
   } finally {
     const btn = document.getElementById('gen-btn');
@@ -1612,21 +1444,9 @@ async function generateBriefing() {
   }
 }
 
-// ─────────────────────────────────────
-// EMAIL MODAL
-// ─────────────────────────────────────
-function openEmailModal() {
-  document.getElementById('email-modal').classList.add('open');
-}
-
-function closeEmailModal() {
-  document.getElementById('email-modal').classList.remove('open');
-  document.getElementById('success-msg').classList.remove('show');
-}
-
-function closeModalOutside(e) {
-  if (e.target === document.getElementById('email-modal')) closeEmailModal();
-}
+function openEmailModal() { document.getElementById('email-modal').classList.add('open'); }
+function closeEmailModal() { document.getElementById('email-modal').classList.remove('open'); document.getElementById('success-msg').classList.remove('show'); }
+function closeModalOutside(e) { if (e.target === document.getElementById('email-modal')) closeEmailModal(); }
 
 async function subscribe() {
   const email = document.getElementById('email-input').value.trim();
@@ -1639,9 +1459,7 @@ async function subscribe() {
 
   try {
     const res = await fetch(`${API_BASE}/subscribe`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }),
     });
     const data = await res.json();
     if (data.ok) {
@@ -1651,27 +1469,18 @@ async function subscribe() {
       btn.disabled = false; btn.textContent = 'Subscribe';
     }
   } catch(e) {
-    // Offline fallback
     document.getElementById('email-preview-section').style.display = 'none';
     document.getElementById('success-msg').classList.add('show');
   }
 }
 
-function openArticle(a) {
-  const url = a.url || a.link;
-  if (url && url !== '#') {
-    window.open(url, '_blank');
-  }
-}
-
 function getDemoArticles() {
   return [
-    { id:1, sector:"PE", source:"Private Equity Wire", title:"Permira and Warburg Pincus Sell Evelyn Partners to NatWest for £2.7bn", body:"Permira and Warburg Pincus agreed to sell UK wealth manager Evelyn Partners to NatWest Group for £2.7bn, marking a major consolidation in UK private banking and a significant liquidity event for both PE firms.", time:"2h ago", rel:95, aiSummary:null, url:"https://www.privateequitywire.co.uk/news/" },
-    { id:2, sector:"PE", source:"Private Equity Wire", title:"Thoma Bravo Eyes Software Market Downturn Dubbed the SaaSpocalypse", body:"Tech-focused buyout firm Thoma Bravo is looking to capitalise on the ongoing software market downturn, as a disconnect between high-quality firms and riskier software providers creates selective entry points for disciplined PE buyers.", time:"4h ago", rel:91, aiSummary:null, url:"https://www.privateequitywire.co.uk/news/" },
-    { id:3, sector:"Hedge", source:"Private Equity Wire", title:"Blackstone Expands Anthropic Stake to Around $1bn at $350bn Valuation", body:"Blackstone has expanded its investment in AI startup Anthropic, bringing its total stake to around $1bn at the current $350bn valuation, signalling continued institutional appetite for AI infrastructure exposure.", time:"5h ago", rel:88, aiSummary:null, url:"https://www.privateequitywire.co.uk/news/" },
-    { id:4, sector:"Credit", source:"Private Equity Wire", title:"Apollo Posts 13% Rise in Q4 Profit on Record Debt Origination", body:"Apollo Global Management posted a 13% rise in fourth-quarter profit, surpassing Wall Street estimates, driven by record debt origination and strong inflows from clients seeking private credit alternatives.", time:"7h ago", rel:87, aiSummary:null, url:"https://www.privateequitywire.co.uk/news/" },
-    { id:5, sector:"RE", source:"Private Equity Wire", title:"Brookfield and GIC Propose AUD4bn Take-Private of National Storage REIT", body:"National Storage REIT received a AUD4.02bn buyout proposal from a consortium led by Brookfield and GIC, marking what would be Australia largest real-estate take-private deal.", time:"9h ago", rel:84, aiSummary:null, url:"https://www.privateequitywire.co.uk/news/" },
+    { id:1, sector:"Macro", source:"Reuters", title:"Fed Signals Further Rate Caution Following Persistent Inflation Data", body:"Federal Reserve officials signaled they are in no rush to cut interest rates, creating a challenging environment for software buyouts and highly leveraged Private Equity portfolios that rely on cheap debt.", time:"1h ago", rel:95, aiSummary:null, qscore: 95, url:"#", _ts: Date.now() - 3600000 },
+    { id:2, sector:"PE", source:"PitchBook (Open)", title:"Thoma Bravo Eyes Software Market Downturn Dubbed the SaaSpocalypse", body:"Tech-focused buyout firm Thoma Bravo is looking to capitalise on the ongoing software market downturn, as a disconnect between high-quality firms and riskier software providers creates selective entry points.", time:"3h ago", rel:91, aiSummary:null, qscore: 90, url:"#", _ts: Date.now() - 10800000 },
+    { id:3, sector:"Hedge", source:"CNBC", title:"Blackstone Expands Anthropic Stake to Around $1bn amid AI Boom", body:"Blackstone has expanded its investment in AI startup Anthropic, bringing its total stake to around $1bn at the current valuation, signalling continued institutional appetite for AI infrastructure exposure.", time:"5h ago", rel:88, aiSummary:null, qscore: 85, url:"#", _ts: Date.now() - 18000000 }
   ];
-}</script>
+}
+</script>
 </body>
 </html>
