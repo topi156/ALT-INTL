@@ -580,6 +580,8 @@ body::before {
 
 .briefing-body p { margin-bottom: 10px; }
 .briefing-body p:last-child { margin-bottom: 0; }
+.briefing-body ul { margin-left: 16px; margin-bottom: 10px; }
+.briefing-body li { margin-bottom: 6px; }
 
 .briefing-placeholder {
   font-style: italic;
@@ -980,7 +982,7 @@ const RSS_FEEDS = [
   // ── Open / Free Sources (Get +15 Score Bonus) ─────────
   { url: "https://pitchbook.com/blog/rss.xml",                       source: "PitchBook (Open)",sector: "PE",    paywall: false },
   { url: "https://altassets.net/feed",                               source: "AltAssets",       sector: "PE",    paywall: false },
-  { url: "https://techcrunch.com/category/venture/feed/",            source: "TechCrunch VC",   sector: "PE",    paywall: false },
+  { url: "https://techcrunch.com/category/venture/feed/",             source: "TechCrunch VC",   sector: "PE",    paywall: false },
   { url: "https://renewablesnow.com/news/rss/",                      source: "Renewables Now",  sector: "Infra", paywall: false },
   { url: "https://www.rechargenews.com/rss",                         source: "Recharge News",   sector: "Infra", paywall: false },
   { url: "https://therealdeal.com/feed/",                            source: "The Real Deal",   sector: "RE",    paywall: false },
@@ -1242,15 +1244,12 @@ function renderHero() {
   const now = Date.now();
   const H24 = 24 * 60 * 60 * 1000;
 
-  // סינון לכתבות מה-24 שעות האחרונות בלבד
   let recentArticles = articles.filter(a => a._ts && (now - a._ts) <= H24);
 
-  // הגנת UI: אם אין שום כתבה מהיממה האחרונה, ניקח מכל המאגר כדי לא לשבור את העיצוב (רק למקרה קיצון)
   if (recentArticles.length === 0) {
     recentArticles = articles;
   }
 
-  // מיון לפי הציון ולקיחת ה-3 הטובות ביותר (מתוך אלו שעברו את סינון הזמן)
   const top3 = recentArticles.slice()
                              .sort((a,b) => (b.qscore||0) - (a.qscore||0))
                              .slice(0,3);
@@ -1422,8 +1421,23 @@ async function generateBriefing() {
     const btn = document.getElementById('gen-btn');
     if (btn) btn.disabled = true;
 
-    const items = articles.slice(0, 30).map(a => ({
-      title: a.title, url: a.url, source: a.source, sector: a.sector, time: a.time
+    // הוספת חיווי ויזואלי למשתמש בזמן הטעינה
+    const out = document.getElementById('briefing-body');
+    if (out) out.innerHTML = '<span class="briefing-placeholder">Generating AI Briefing... <span class="spin">↻</span></span>';
+
+    // 1. מיון הכתבות ובחירת ה-10 עם הציון הגבוה ביותר
+    const topScoringArticles = [...articles]
+      .sort((a, b) => (b.qscore || 0) - (a.qscore || 0))
+      .slice(0, 10);
+
+    // 2. מיפוי הנתונים למבנה שיישלח לשרת
+    const items = topScoringArticles.map(a => ({
+      title: a.title, 
+      url: a.url, 
+      source: a.source, 
+      sector: a.sector, 
+      time: a.time,
+      score: a.qscore 
     }));
 
     const res = await fetch((API_BASE ? `${API_BASE}/api/briefing` : `/api/briefing`), {
@@ -1434,10 +1448,15 @@ async function generateBriefing() {
 
     if (!res.ok) throw new Error(`Briefing failed: ${res.status}`);
     const data = await res.json();
-    const out = document.getElementById('briefing-output');
-    if (out) out.textContent = data.briefing || '';
+    
+    // 3. הזרקת הפלט לווידג'ט
+    if (out) {
+        out.innerHTML = data.briefing || '<p>No briefing generated.</p>';
+    }
   } catch (e) {
     alert('Briefing failed. Check proxy is running and API key is set.');
+    const out = document.getElementById('briefing-body');
+    if (out) out.innerHTML = '<span class="briefing-placeholder">Failed to generate briefing. Please try again.</span>';
   } finally {
     const btn = document.getElementById('gen-btn');
     if (btn) btn.disabled = false;
