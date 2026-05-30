@@ -4,8 +4,8 @@ const { buildDigestHtml, getSampleNewsItems } = require('../lib/digest-template'
 const { fetchTopArticles, markSeen } = require('../lib/news-fetcher');
 
 module.exports = async function handler(req, res) {
-  // Authorization: Vercel cron sets x-vercel-cron header automatically.
-  // For manual triggers pass: Authorization: Bearer <CRON_SECRET>
+  // Authorization: Vercel cron sets x-vercel-cron:1 automatically.
+  // For manual triggers: Authorization: Bearer <CRON_SECRET>
   const isVercelCron = req.headers['x-vercel-cron'] === '1';
   const cronSecret = process.env.CRON_SECRET;
   const hasSecret = cronSecret && req.headers['authorization'] === `Bearer ${cronSecret}`;
@@ -14,8 +14,8 @@ module.exports = async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  // Test mode: send only to one address, not all subscribers.
-  // Manual override: /api/digest?test=1&email=you@example.com
+  // Test mode: send only to one address, never all subscribers.
+  // ?test=1&email=you@example.com — manual override
   const isTestOverride = req.query.test === '1';
   const testMode = process.env.TEST_MODE !== 'false' || isTestOverride;
   const testEmail = (req.query.email || process.env.TEST_EMAIL || '').toLowerCase();
@@ -26,10 +26,10 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  // Use sample items if ?sample=1 (handy for template QA without live feeds)
+  // ?sample=1 — use hardcoded articles (template QA, no live feeds or Redis needed)
   const useSamples = req.query.sample === '1';
 
-  // ── Resolve recipients ────────────────────────────────────────────────────
+  // ── Recipients ───────────────────────────────────────────────────────────
   let recipients = [];
   if (testMode) {
     recipients = [{ email: testEmail, token: 'test-token' }];
@@ -41,21 +41,27 @@ module.exports = async function handler(req, res) {
     recipients = Object.values(all).map(v => (typeof v === 'string' ? JSON.parse(v) : v));
   }
 
-  // ── Fetch news ────────────────────────────────────────────────────────────
+  // ── Fetch news ───────────────────────────────────────────────────────────
   let newsItems;
+  let digestDebug = null;
+
   if (useSamples) {
     newsItems = getSampleNewsItems();
   } else {
-    newsItems = await fetchTopArticles(redis, 5);
+    const result = await fetchTopArticles(redis, 5);
+    newsItems = result.articles;
+    digestDebug = result.debug;
+
     if (!newsItems.length) {
       return res.status(200).json({
         ok: false,
         message: 'No fresh articles found from any feed. Digest not sent.',
+        debug: digestDebug,
       });
     }
   }
 
-  // ── Build and send ────────────────────────────────────────────────────────
+  // ── Build and send ───────────────────────────────────────────────────────
   const date = new Date();
   const siteUrl = process.env.SITE_URL || '';
   const dateLabel = date.toLocaleDateString('en-US', {
@@ -91,6 +97,9 @@ module.exports = async function handler(req, res) {
     await markSeen(redis, newsItems);
   }
 
+  // Show debug in response when in test mode or ?debug=1
+  const showDebug = testMode || req.query.debug === '1';
+
   return res.status(200).json({
     ok: true,
     testMode,
@@ -98,7 +107,14 @@ module.exports = async function handler(req, res) {
     sent,
     failed: errors.length,
     total: recipients.length,
-    articles: newsItems.map(a => ({ headline: a.headline, source: a.source, score: a.score })),
+    articles: newsItems.map(a => ({
+      sector: a.sector,
+      headline: a.headline,
+      source: a.source,
+      score: a.score,
+      pubDateLabel: a.pubDateLabel,
+    })),
+    ...(showDebug && digestDebug && { debug: digestDebug }),
     ...(errors.length > 0 && { errors }),
   });
 };
