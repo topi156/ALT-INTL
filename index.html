@@ -1477,7 +1477,7 @@ async function subscribe() {
   btn.disabled = true; btn.textContent = '...';
 
   try {
-    const res = await fetch(`${API_BASE}/subscribe`, {
+    const res = await fetch(`${API_BASE}/api/subscribe`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }),
     });
     const data = await res.json();
