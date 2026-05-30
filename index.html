@@ -1041,37 +1041,79 @@ function guessSector(title, body, defaultSector) {
 const TIER1 = ['PitchBook', 'Bloomberg', 'Financial Times', 'WSJ Markets', 'Reuters', 'PE Wire', 'Yahoo Finance', 'CNBC'];
 const TIER2 = ['TechCrunch VC', 'The Real Deal', 'AltAssets', 'Renewables Now', 'GlobeSt'];
 
+// Returns true for routine LP commitment announcements that are NOT IC-meeting-worthy.
+// Significant events (strategic allocation shifts, $5B+, cornerstone) are always allowed.
+function isRoutineLPCommit(title, body) {
+  const t = title + ' ' + (body || '');
+  // Significant LP events are always allowed
+  if (/(increas|decreas|reduc|cuts?\b|exits?\b|overhaul|restructur|raises?\b|boosts?\b).{0,60}(allocation|target|weighting|exposure|strategy|policy)/i.test(t)) return false;
+  if (/\$\s*(?:[5-9](?:\.\d+)?|[1-9]\d+(?:\.\d+)?)\s*(?:billion|bn|b)\b/i.test(t)) return false;
+  if (/(cornerstone|anchor investor|inaugural|first\s+institutional|co.invest|co-invest)/i.test(t)) return false;
+  if (/(multiple|several|widespread|industry.wide|sector.wide).{0,60}(pension|commit|allocat|reduc|increas)/i.test(t)) return false;
+  if (/(materially|significantly|dramatically|substantially).{0,50}(increas|decreas|reduc|exit|allocat)/i.test(t)) return false;
+  // Routine pattern: LP institution + dollar amount + commitment action
+  const hasLP     = /(pension fund|pension plan|endowment fund|retirement system|retirement fund|retirement board|public retirement|public pension|state retirement|municipal retirement|municipal pension|county retirement|county employees|state board\b|state investment board|board of trustees|investment board|teachers.*retirement|firefighter.*retirement|police.*retirement|police.{1,5}fire|fire.{1,5}police|public employee.*retirement|workers.*retirement|PERS|STRS|\bERS\b|\bTRS\b)/i.test(t);
+  const hasDollar = /\$[\d,]+(?:\.\d+)?\s*(?:million|billion|mn|bn)\b/i.test(t);
+  const hasAction = /\b(commit[stted]+|earmarks?|earmarked|invests?\b|invested\b|allocates?|allocated\b|approv[eo][sd]\b|selects?\b|designated?\b|pledges?|pledged\b|makes?\s+(?:a\s+)?(?:\$|commitment|investment))\b/i.test(t);
+  return hasLP && hasDollar && hasAction;
+}
+
 function qualityScore(a) {
   const title = (a.title || '').toLowerCase();
-  const body = (a.body || '').toLowerCase();
-  const fullText = title + " " + body;
-  
-  let score = 25; 
+  const body  = (a.body  || '').toLowerCase();
+  const fullText = title + ' ' + body;
+
+  // Routine LP commitment announcements are not IC-meeting-worthy
+  if (isRoutineLPCommit(title, body)) return 0;
+
+  let score = 25;
 
   if (TIER1.some(x => a.source.includes(x))) score += 15;
   else if (TIER2.some(x => a.source.includes(x))) score += 10;
 
-  if (a.paywall === false) {
-    score += 15; 
-  } else {
-    score -= 5;  
-  }
+  score += a.paywall === false ? 15 : -5;
 
-  const fundEventKeywords = ["fundraise", "fundraising", "raised", "raising", "closes", "closed", "first close", "final close", "hard cap", "target", "launches fund", "new fund", "vintage", "gp-led", "dry powder", "lp", "limited partner", "commitment"];
-  if (fundEventKeywords.some(kw => fullText.includes(kw))) score += 20; 
-  if (fundEventKeywords.some(kw => title.includes(kw))) score += 10;
-
-  const macroTechKeywords = [
-    "software", "saas", "tech valuation", "artificial intelligence", "ai startup", "openai", "anthropic",
-    "interest rate", "fed", "federal reserve", "rate cut", "inflation", 
-    "downturn", "distressed", "layoffs", "restructuring", "bankruptcy", 
-    "sec", "regulation", "antitrust", "doj"
+  // Fund-event keywords (+20 text, +10 title)
+  const fundKw = [
+    'fundraise', 'fundraising', 'raised', 'raising', 'closes', 'closed',
+    'first close', 'final close', 'hard cap', 'above hard cap', 'oversubscribed',
+    'launches fund', 'new fund', 'gp-led', 'lp-led', 'dry powder', 'cornerstone',
+    'secondaries', 'secondary fund', 'continuation vehicle', 'continuation fund',
+    'gp stake', 'gp stakes',
   ];
-  if (macroTechKeywords.some(kw => fullText.includes(kw))) score += 30;
-  if (macroTechKeywords.some(kw => title.includes(kw))) score += 15;
+  if (fundKw.some(kw => fullText.includes(kw))) score += 20;
+  if (fundKw.some(kw => title.includes(kw)))    score += 10;
 
-  const consumerKeywords = ["watchmaker", "dolls", "toy", "lifestyle", "luxury brand", "retailer", "hasbro", "mattel", "movie", "celebrity"];
-  if (consumerKeywords.some(kw => fullText.includes(kw))) score -= 40;
+  // Deal-event keywords (+15 text, +10 title)
+  const dealKw = [
+    'interest rate', 'federal reserve', 'rate cut', 'inflation', 'distressed',
+    'restructuring', 'lbo', 'take-private', 'buyout', 'acquisition', 'merger',
+    'ipo', 'exit', 'dividend recap',
+    'software', 'saas', 'tech valuation', 'artificial intelligence',
+    'ai startup', 'openai', 'anthropic',
+  ];
+  if (dealKw.some(kw => fullText.includes(kw))) score += 15;
+  if (dealKw.some(kw => title.includes(kw)))    score += 10;
+
+  // High-value private markets events — premium signal (+30 text, +15 title)
+  const highValueKw = [
+    'gp-led secondary', 'lp-led secondary', 'gp led secondary', 'lp led secondary',
+    'minority stake acquisition', 'gp interest acquisition',
+    'asset manager acquisition', 'acquires asset manager', 'asset management acquisition',
+    'wealth manager acquisition', 'alternative manager acquisition', 'asset management merger',
+    'nav facility', 'nav financing', 'nav loan', 'net asset value loan',
+    'unitranche', 'unitranche financing', 'unitranche facility',
+    'sponsor-to-sponsor', 'secondary buyout', 'pe-backed ipo', 'sponsor-backed ipo',
+    'portfolio company exit', 'portfolio exit',
+    'private fund rule', 'private markets regulation', 'private equity regulation',
+    'alternative investment regulation', 'sec private fund', 'aifmd',
+  ];
+  if (highValueKw.some(kw => fullText.includes(kw))) score += 30;
+  if (highValueKw.some(kw => title.includes(kw)))    score += 15;
+
+  // Noise penalty
+  const noiseKw = ['watchmaker', 'dolls', 'toy', 'lifestyle', 'luxury brand', 'hasbro', 'mattel', 'movie', 'celebrity'];
+  if (noiseKw.some(kw => fullText.includes(kw))) score -= 40;
 
   return Math.max(0, Math.min(100, score));
 }
@@ -1204,6 +1246,8 @@ async function loadArticles(sector = null) {
   }
 
   articles.sort((a, b) => (b._ts || 0) - (a._ts || 0));
+  // Remove articles excluded by scoring rules (routine LP commits, noise)
+  articles = articles.filter(a => (a.qscore || 0) > 0);
 
   currentFilter = sector || 'all';
   
